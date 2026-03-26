@@ -2,12 +2,26 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- iOS PWA Full-Screen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mathe-Held">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0f0e17">
+<!-- Prevent iOS text selection & callout -->
 <title>Mathe-Held – Rechen-Abenteuer</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦸‍♂️</text></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
 
   :root {
     --bg: #0f0e17;
@@ -18,56 +32,91 @@
     --text: #fffffe;
     --muted: #94a1b2;
     --star: #ffd803;
+    /* Safe areas for Dynamic Island / notch */
+    --sat: env(safe-area-inset-top, 0px);
+    --sab: env(safe-area-inset-bottom, 0px);
+    --sal: env(safe-area-inset-left, 0px);
+    --sar: env(safe-area-inset-right, 0px);
+  }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
   }
 
   body {
     font-family: 'Nunito', sans-serif;
-    background: var(--bg);
     color: var(--text);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     min-height: 100vh;
     min-height: 100dvh;
-    display: flex;
-    justify-content: center;    align-items: center;
-    overflow: hidden;
     -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
   }
 
+  /* ── Full-screen container with safe area padding ── */
   .game-container {
     width: 100%;
     max-width: 520px;
-    padding: 24px;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) calc(16px + var(--sal));
     position: relative;
   }
 
-  /* ── Start Screen ── */
-  .screen { display: none; flex-direction: column; align-items: center; gap: 20px; }
+  /* ── Screens ── */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(12px, 2.5dvh, 24px);
+    flex: 1;
+  }
   .screen.active { display: flex; }
-
+  /* ── Title ── */
   .title {
-    font-size: 2.6rem;
+    font-size: clamp(2rem, 7vw, 2.8rem);
     font-weight: 900;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     text-align: center;
+    line-height: 1.1;
   }
-  .subtitle { color: var(--muted); font-size: 1.1rem; text-align: center; }
+  .subtitle {
+    color: var(--muted);
+    font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+    text-align: center;
+    padding: 0 8px;
+  }
 
-  .hero-emoji { font-size: 5rem; animation: bounce 1.5s infinite; }
+  .hero-emoji {
+    font-size: clamp(3.5rem, 12vw, 5rem);
+    animation: bounce 1.5s infinite;
+  }
   @keyframes bounce {
     0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-18px); }  }
+    50% { transform: translateY(-14px); }
+  }
 
   /* ── Buttons ── */
   .btn {
-    padding: 14px 36px;
+    padding: clamp(12px, 2dvh, 16px) 32px;
     border: none;
     border-radius: 16px;
     font-family: inherit;
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 4vw, 1.2rem);
     font-weight: 700;
     cursor: pointer;
     transition: transform .15s, box-shadow .15s;
+    touch-action: manipulation;
+    -webkit-appearance: none;
   }
   @media (hover: hover) { .btn:hover { transform: scale(1.05); } }
   .btn:active { transform: scale(0.97); }
@@ -76,8 +125,6 @@
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     color: #fff;
     box-shadow: 0 6px 24px rgba(255,137,6,.35);
-    touch-action: manipulation;
-    -webkit-appearance: none;
   }
   .btn-secondary {
     background: var(--card);
@@ -86,47 +133,47 @@
   }
 
   /* ── HUD ── */
-  .hud {    display: flex;
+  .hud {
+    display: flex;
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: 12px 0;
+    padding: clamp(6px, 1dvh, 12px) 0;
   }
   .hud-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: clamp(0.85rem, 3.5vw, 1.05rem);
   }
-  .hud-icon { font-size: 1.3rem; }
-
+  .hud-icon { font-size: clamp(1rem, 4vw, 1.3rem); }
   /* ── XP Bar ── */
   .xp-bar-wrap {
     width: 100%;
-    height: 14px;
+    height: clamp(10px, 1.5dvh, 14px);
     background: var(--card);
     border-radius: 99px;
     overflow: hidden;
-    position: relative;
   }
   .xp-bar {
     height: 100%;
     background: linear-gradient(90deg, var(--green), #05d9e8);
     border-radius: 99px;
     transition: width .6s ease;
-  }  .xp-label {
-    font-size: .8rem;
+  }
+  .xp-label {
+    font-size: clamp(0.65rem, 2.5vw, 0.8rem);
     color: var(--muted);
     text-align: center;
-    margin-top: 4px;
+    margin-top: 2px;
   }
 
   /* ── Task Card ── */
   .task-card {
     background: var(--card);
-    border-radius: 24px;
-    padding: 36px 28px;
+    border-radius: clamp(16px, 4vw, 24px);
+    padding: clamp(20px, 4dvh, 36px) clamp(16px, 4vw, 28px);
     width: 100%;
     text-align: center;
     box-shadow: 0 12px 40px rgba(0,0,0,.4);
@@ -141,39 +188,46 @@
     background: linear-gradient(90deg, var(--accent), var(--accent2));
   }
 
-  .task-label { color: var(--muted); font-size: .9rem; margin-bottom: 8px; }
-  .task-question {
-    font-size: 3rem;
-    font-weight: 900;    letter-spacing: 2px;
-    margin-bottom: 24px;
+  .task-label {
+    color: var(--muted);
+    font-size: clamp(0.75rem, 2.8vw, 0.9rem);
+    margin-bottom: clamp(4px, 1dvh, 8px);
   }
-
+  .task-question {
+    font-size: clamp(2rem, 9vw, 3.2rem);
+    font-weight: 900;
+    letter-spacing: 2px;
+    margin-bottom: clamp(14px, 2.5dvh, 24px);
+  }
   /* ── Answer Buttons ── */
   .answers {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: clamp(8px, 2vw, 12px);
   }
   .answer-btn {
-    padding: 18px 16px;
+    padding: clamp(14px, 2.5dvh, 20px) 12px;
     border: 2px solid transparent;
-    border-radius: 16px;
+    border-radius: clamp(12px, 3vw, 16px);
     background: rgba(255,255,255,.06);
     color: var(--text);
     font-family: inherit;
-    font-size: 1.5rem;
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
     font-weight: 700;
     cursor: pointer;
     transition: all .2s;
     touch-action: manipulation;
     -webkit-appearance: none;
-    min-height: 56px;
+    min-height: clamp(48px, 8dvh, 64px);
   }
-  @media (hover: hover) { .answer-btn:hover { background: rgba(255,255,255,.12); border-color: var(--accent); } }
+  @media (hover: hover) {
+    .answer-btn:hover { background: rgba(255,255,255,.12); border-color: var(--accent); }
+  }
   .answer-btn.correct {
     background: rgba(44,182,125,.25);
     border-color: var(--green);
-    animation: pop .4s;  }
+    animation: pop .4s;
+  }
   .answer-btn.wrong {
     background: rgba(229,49,112,.2);
     border-color: var(--accent2);
@@ -190,28 +244,29 @@
     25% { transform: translateX(-8px); }
     75% { transform: translateX(8px); }
   }
-
   /* ── Feedback ── */
   .feedback {
-    font-size: 1.3rem;
+    font-size: clamp(1rem, 3.8vw, 1.3rem);
     font-weight: 700;
-    min-height: 40px;
+    min-height: clamp(28px, 5dvh, 40px);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
   }
   .feedback.good { color: var(--green); }
   .feedback.bad { color: var(--accent2); }
+
   /* ── Streak ── */
   .streak-bar {
     display: flex;
     gap: 6px;
     justify-content: center;
-    margin-top: 8px;
+    margin-top: clamp(4px, 1dvh, 8px);
   }
   .streak-dot {
-    width: 14px; height: 14px;
+    width: clamp(10px, 3vw, 14px);
+    height: clamp(10px, 3vw, 14px);
     border-radius: 50%;
     background: var(--card);
     border: 2px solid var(--muted);
@@ -231,24 +286,28 @@
     background: rgba(15,14,23,.92);
     justify-content: center;
     align-items: center;
-    flex-direction: column;    gap: 20px;
+    flex-direction: column;
+    gap: clamp(14px, 3dvh, 24px);
     z-index: 100;
+    padding: var(--sat) var(--sar) var(--sab) var(--sal);
   }
   .overlay.active { display: flex; }
-  .overlay .big-emoji { font-size: 6rem; animation: bounce 1s infinite; }
+  .overlay .big-emoji { font-size: clamp(4rem, 14vw, 6rem); animation: bounce 1s infinite; }
   .overlay .level-text {
-    font-size: 2.4rem;
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
     font-weight: 900;
     background: linear-gradient(135deg, var(--star), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
-  .overlay .level-sub { color: var(--muted); font-size: 1.1rem; }
-
+  .overlay .level-sub {
+    color: var(--muted);
+    font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+  }
   /* ── Stars floating ── */
   .star-float {
     position: fixed;
-    font-size: 2rem;
+    font-size: clamp(1.5rem, 5vw, 2rem);
     pointer-events: none;
     animation: floatUp 1.2s ease-out forwards;
     z-index: 200;
@@ -260,37 +319,41 @@
 
   /* ── Summary ── */
   .summary-stats {
-    display: grid;    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(8px, 2vw, 12px);
     width: 100%;
   }
   .stat-card {
     background: var(--card);
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: clamp(12px, 3vw, 16px);
+    padding: clamp(12px, 2.5dvh, 20px) clamp(8px, 2vw, 16px);
     text-align: center;
   }
-  .stat-value { font-size: 2rem; font-weight: 900; }
-  .stat-label { font-size: .85rem; color: var(--muted); }
+  .stat-value { font-size: clamp(1.4rem, 6vw, 2rem); font-weight: 900; }
+  .stat-label { font-size: clamp(0.7rem, 2.8vw, 0.85rem); color: var(--muted); }
   .stat-card.highlight { border: 2px solid var(--star); }
 
   /* ── Number range selection ── */
   .range-options {
     display: flex;
-    gap: 10px;
+    gap: clamp(6px, 2vw, 10px);
     flex-wrap: wrap;
     justify-content: center;
   }
   .range-btn {
-    padding: 10px 20px;
+    padding: clamp(8px, 1.5dvh, 12px) clamp(14px, 4vw, 20px);
     border: 2px solid var(--muted);
     border-radius: 12px;
     background: var(--card);
     color: var(--text);
     font-family: inherit;
-    font-size: 1rem;
-    font-weight: 700;    cursor: pointer;
+    font-size: clamp(0.85rem, 3.5vw, 1rem);
+    font-weight: 700;
+    cursor: pointer;
     transition: all .2s;
+    touch-action: manipulation;
+    -webkit-appearance: none;
   }
   @media (hover: hover) {
     .range-btn:hover {
@@ -301,6 +364,58 @@
   .range-btn.selected {
     border-color: var(--accent);
     background: rgba(255,137,6,.15);
+  }
+
+  .range-label {
+    color: var(--muted);
+    font-size: clamp(0.8rem, 3vw, 0.95rem);
+  }
+
+  .summary-actions {
+    display: flex;
+    gap: clamp(8px, 2vw, 12px);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #sumMessage {
+    color: var(--green);
+    font-weight: 700;
+    font-size: clamp(1rem, 3.8vw, 1.2rem);
+    text-align: center;
+  }
+  /* ══ iPhone-specific: taller screens get more breathing room ══ */
+  /* iPhone 17 Pro Max: 440x956 logical, iPhone 17: 393x852 logical */
+  @media (max-width: 430px) and (min-height: 800px) {
+    .game-container { padding-left: calc(20px + var(--sal)); padding-right: calc(20px + var(--sar)); }
+    .task-card { padding: clamp(24px, 4dvh, 32px) 20px; }
+  }
+
+  /* Very tall screens (Pro Max) — use extra vertical space */
+  @media (min-height: 900px) and (max-width: 440px) {
+    .screen { gap: clamp(16px, 3dvh, 28px); }
+    .answer-btn { min-height: 60px; padding: 18px 14px; }
+    .hero-emoji { font-size: clamp(4rem, 13vw, 5.5rem); }
+  }
+
+  /* Smaller iPhones / SE */
+  @media (max-height: 700px) {
+    .hero-emoji { font-size: 2.8rem; }
+    .screen { gap: 8px; }
+    .task-card { padding: 16px 14px; }
+    .answer-btn { min-height: 44px; padding: 10px 8px; font-size: 1.1rem; }
+    .task-question { font-size: 1.8rem; margin-bottom: 10px; }
+    .feedback { min-height: 24px; font-size: 0.9rem; }
+  }
+
+  /* Landscape — unlikely for a kids game, but handle it */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .game-container { flex-direction: row; }
+    .hero-emoji { font-size: 2.5rem; }
+    .screen { gap: 6px; }
+    .task-card { padding: 12px; }
+    .task-question { font-size: 1.6rem; margin-bottom: 8px; }
+    .answer-btn { min-height: 40px; padding: 8px; font-size: 1rem; }
   }
 </style>
 </head>
@@ -313,12 +428,13 @@
     <div class="hero-emoji">🦸‍♂️</div>
     <div class="title">Mathe-Held</div>
     <div class="subtitle">Löse Aufgaben, sammle Sterne und werde zum Rechen-Champion!</div>
-    <div style="margin-top:8px; color: var(--muted); font-size:.95rem;">Wähle den Zahlenraum:</div>
+    <div class="range-label">Wähle den Zahlenraum:</div>
     <div class="range-options">
       <button class="range-btn selected" data-max="10">bis 10</button>
       <button class="range-btn" data-max="20">bis 20</button>
       <button class="range-btn" data-max="50">bis 50</button>
-      <button class="range-btn" data-max="100">bis 100</button>    </div>
+      <button class="range-btn" data-max="100">bis 100</button>
+    </div>
     <button class="btn btn-primary" id="startBtn">Los geht's!</button>
   </div>
 
@@ -341,12 +457,12 @@
       <div class="streak-bar" id="streakBar"></div>
     </div>
   </div>
-
   <!-- ═══ SUMMARY SCREEN ═══ -->
   <div id="summaryScreen" class="screen">
     <div class="hero-emoji">🏆</div>
     <div class="title">Super gemacht!</div>
-    <div class="summary-stats">      <div class="stat-card highlight">
+    <div class="summary-stats">
+      <div class="stat-card highlight">
         <div class="stat-value" id="sumStars">0</div>
         <div class="stat-label">Sterne gesammelt</div>
       </div>
@@ -363,8 +479,8 @@
         <div class="stat-label">Genauigkeit</div>
       </div>
     </div>
-    <div id="sumMessage" style="color:var(--green);font-weight:700;font-size:1.2rem;text-align:center;"></div>
-    <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+    <div id="sumMessage"></div>
+    <div class="summary-actions">
       <button class="btn btn-primary" id="playAgainBtn">Nochmal spielen!</button>
       <button class="btn btn-secondary" id="backHomeBtn">Zurück zum Start</button>
     </div>
@@ -375,10 +491,15 @@
 <div id="levelUpOverlay" class="overlay">
   <div class="big-emoji">🌟</div>
   <div class="level-text" id="lvlUpText">Level 2!</div>
-  <div class="level-sub" id="lvlUpSub">Weiter so, du bist großartig!</div>  <button class="btn btn-primary" id="lvlUpBtn">Weiter!</button>
+  <div class="level-sub" id="lvlUpSub">Weiter so, du bist großartig!</div>
+  <button class="btn btn-primary" id="lvlUpBtn">Weiter!</button>
 </div>
 
 <script>
+// ═══════════ PREVENT iOS BOUNCE / PULL-TO-REFRESH ═══════════
+document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+document.addEventListener('gesturestart', e => e.preventDefault());
+
 // ═══════════ GAME STATE ═══════════
 const state = {
   maxNum: 10,
@@ -404,11 +525,11 @@ const ENCOURAGE = [
 ];
 const LEVEL_MSGS = [
   'Du wirst immer besser!',
-  'Unaufhaltbar!',  'Ein echter Mathe-Held!',
+  'Unaufhaltbar!',
+  'Ein echter Mathe-Held!',
   'Dein Gehirn glüht!',
   'Nichts kann dich aufhalten!',
 ];
-
 // ═══════════ DOM REFS ═══════════
 const $ = id => document.getElementById(id);
 const screens = {
@@ -433,7 +554,8 @@ document.querySelectorAll('.range-btn').forEach(btn => {
 
 // ═══════════ START GAME ═══════════
 $('startBtn').addEventListener('click', startGame);
-$('playAgainBtn').addEventListener('click', startGame);$('backHomeBtn').addEventListener('click', () => {
+$('playAgainBtn').addEventListener('click', startGame);
+$('backHomeBtn').addEventListener('click', () => {
   resetState();
   showScreen('start');
 });
@@ -463,12 +585,12 @@ function generateQuestion() {
   const max = state.maxNum;
   const isAdd = Math.random() < 0.5;
   let a, b, answer;
+
   if (isAdd) {
     a = randInt(0, max);
     b = randInt(0, max - a);
     answer = a + b;
   } else {
-    // subtraction: make sure result >= 0
     a = randInt(1, max);
     b = randInt(0, a);
     answer = a - b;
@@ -477,7 +599,6 @@ function generateQuestion() {
   const op = isAdd ? '+' : '−';
   const text = `${a} ${op} ${b} = ?`;
 
-  // generate wrong answers
   const wrongs = new Set();
   while (wrongs.size < 3) {
     let w = answer + randInt(-5, 5);
@@ -492,13 +613,13 @@ function generateQuestion() {
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-function shuffle(arr) {  for (let i = arr.length - 1; i > 0; i--) {
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
 }
-
 // ═══════════ NEXT QUESTION ═══════════
 function nextQuestion() {
   if (state.questionNum >= state.questionsPerRound) {
@@ -521,7 +642,8 @@ function nextQuestion() {
   q.options.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'answer-btn';
-    btn.textContent = opt;    btn.addEventListener('click', () => handleAnswer(btn, opt, q.answer));
+    btn.textContent = opt;
+    btn.addEventListener('click', () => handleAnswer(btn, opt, q.answer));
     answersEl.appendChild(btn);
   });
 
@@ -542,19 +664,16 @@ function handleAnswer(btn, chosen, correct) {
     state.streak++;
     if (state.streak > state.bestStreak) state.bestStreak = state.streak;
 
-    // Stars: 1 per correct, bonus for streaks of 3
     let earned = 1;
     if (state.streak > 0 && state.streak % 3 === 0) earned += 2;
     state.stars += earned;
-
-    // XP
     state.xp += 1;
 
-    $('feedback').textContent = pick(PRAISE) + (earned > 1 ? ` +${earned} ⭐` : ' +1 ⭐');    $('feedback').className = 'feedback good';
+    $('feedback').textContent = pick(PRAISE) + (earned > 1 ? ` +${earned} ⭐` : ' +1 ⭐');
+    $('feedback').className = 'feedback good';
 
     spawnStarFloat(btn);
 
-    // Level up check
     if (state.xp >= state.xpNeeded) {
       state.level++;
       state.xp = 0;
@@ -564,7 +683,6 @@ function handleAnswer(btn, chosen, correct) {
   } else {
     btn.classList.add('wrong');
     state.streak = 0;
-    // highlight correct answer
     allBtns.forEach(b => {
       if (parseInt(b.textContent) === correct) b.classList.add('correct');
     });
@@ -575,13 +693,11 @@ function handleAnswer(btn, chosen, correct) {
   renderStreakBar();
   updateHUD();
 
-  // Disable all buttons
   allBtns.forEach(b => b.style.pointerEvents = 'none');
-
   setTimeout(nextQuestion, 1600);
 }
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 // ═══════════ STREAK BAR ═══════════
 function renderStreakBar() {
   const bar = $('streakBar');
@@ -608,7 +724,8 @@ function spawnStarFloat(btn) {
 
 // ═══════════ HUD ═══════════
 function updateHUD() {
-  $('hudStars').textContent = state.stars;  $('hudLevel').textContent = state.level;
+  $('hudStars').textContent = state.stars;
+  $('hudLevel').textContent = state.level;
   $('hudCorrect').textContent = state.correct;
   $('hudTotal').textContent = state.total;
 
@@ -637,7 +754,8 @@ function showSummary() {
   const acc = state.total > 0 ? Math.round((state.correct / state.total) * 100) : 0;
   $('sumAccuracy').textContent = acc + '%';
 
-  let msg = '';  if (acc === 100) msg = '🎉 Perfekt! Du bist ein Mathe-Genie!';
+  let msg = '';
+  if (acc === 100) msg = '🎉 Perfekt! Du bist ein Mathe-Genie!';
   else if (acc >= 80) msg = '🌟 Fantastisch! Du bist richtig gut!';
   else if (acc >= 60) msg = '💪 Gut gemacht! Übung macht den Meister!';
   else msg = '🚀 Weiter üben – du schaffst das!';
