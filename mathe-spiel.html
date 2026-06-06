@@ -29,6 +29,7 @@
     --accent: #ff8906;
     --accent2: #e53170;
     --green: #2cb67d;
+    --cyan: #05d9e8;
     --text: #fffffe;
     --muted: #94a1b2;
     --star: #ffd803;
@@ -197,7 +198,14 @@
     font-size: clamp(2rem, 9vw, 3.2rem);
     font-weight: 900;
     letter-spacing: 2px;
-    margin-bottom: clamp(14px, 2.5dvh, 24px);
+    margin-bottom: clamp(8px, 1.5dvh, 14px);
+    min-height: 1px;
+  }
+  .task-sub {
+    color: var(--text);
+    font-size: clamp(0.95rem, 3.8vw, 1.2rem);
+    font-weight: 700;
+    margin-bottom: clamp(10px, 2dvh, 18px);
   }
   /* ── Answer Buttons ── */
   .answers {
@@ -219,6 +227,9 @@
     touch-action: manipulation;
     -webkit-appearance: none;
     min-height: clamp(48px, 8dvh, 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   @media (hover: hover) {
     .answer-btn:hover { background: rgba(255,255,255,.12); border-color: var(--accent); }
@@ -253,6 +264,7 @@
     align-items: center;
     justify-content: center;
     gap: 6px;
+    margin-top: clamp(8px, 1.5dvh, 14px);
   }
   .feedback.good { color: var(--green); }
   .feedback.bad { color: var(--accent2); }
@@ -384,6 +396,218 @@
     font-size: clamp(1rem, 3.8vw, 1.2rem);
     text-align: center;
   }
+
+  /* ══════════ PROFILE SELECTION ══════════ */
+  .profile-options {
+    display: flex;
+    gap: clamp(12px, 4vw, 20px);
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+  .profile-btn {
+    flex: 1;
+    min-width: 130px;
+    max-width: 200px;
+    background: var(--card);
+    border: 3px solid transparent;
+    border-radius: clamp(16px, 4vw, 24px);
+    padding: clamp(16px, 3dvh, 28px) clamp(10px, 3vw, 18px);
+    cursor: pointer;
+    transition: transform .15s, border-color .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    color: var(--text);
+    touch-action: manipulation;
+    -webkit-appearance: none;
+  }
+  .profile-btn:active { transform: scale(0.97); }
+  @media (hover: hover) { .profile-btn:hover { border-color: var(--accent); transform: translateY(-4px); } }
+  .pf-emoji { font-size: clamp(2.8rem, 11vw, 4rem); }
+  .pf-name { font-size: clamp(1.2rem, 5vw, 1.6rem); font-weight: 900; }
+  .pf-sub { font-size: clamp(0.75rem, 3vw, 0.9rem); color: var(--muted); }
+  .pf-best { font-size: clamp(0.72rem, 2.9vw, 0.88rem); color: var(--star); font-weight: 700; margin-top: 4px; min-height: 1.1em; }
+
+  /* ── Mute toggle (fixed, clears the notch) ── */
+  #muteBtn {
+    position: fixed;
+    top: calc(8px + var(--sat));
+    right: calc(10px + var(--sar));
+    z-index: 90;
+    width: clamp(38px, 10vw, 46px);
+    height: clamp(38px, 10vw, 46px);
+    border-radius: 50%;
+    border: none;
+    background: rgba(26,25,50,.85);
+    color: var(--text);
+    font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    touch-action: manipulation;
+    -webkit-appearance: none;
+  }
+  #muteBtn:active { transform: scale(.92); }
+
+  #sumExtra { color: var(--muted); font-size: clamp(0.85rem, 3.4vw, 1rem); font-weight: 700; text-align: center; }
+  #sumExtra .rec { color: var(--star); }
+
+  /* ══════════ TYPE CHIPS (multi-select) ══════════ */
+  .type-options {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6px, 1.2dvh, 10px);
+    width: 100%;
+    max-width: 360px;
+  }
+  .type-chip {
+    padding: clamp(9px, 1.6dvh, 13px) clamp(12px, 3vw, 18px);
+    border: 2px solid var(--muted);
+    border-radius: 14px;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    font-size: clamp(0.85rem, 3.6vw, 1.02rem);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .type-chip .chk { margin-left: auto; opacity: 0; font-size: 1.1em; }
+  .type-chip.selected { border-color: var(--accent); background: rgba(255,137,6,.15); }
+  .type-chip.selected .chk { opacity: 1; }
+  @media (hover: hover) { .type-chip:hover { border-color: var(--accent); } }
+
+  .setup-title { font-size: clamp(1.5rem, 6vw, 2.1rem); }
+
+  /* ══════════ VISUAL: DOT FIELDS (Zehner-/Zwanzigerfeld, Fünferstruktur) ══════════ */
+  .visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: clamp(8px, 2vw, 14px);
+    margin-bottom: clamp(8px, 1.5dvh, 14px);
+    min-height: 1px;
+  }
+  .frame {
+    display: inline-flex;
+    flex-direction: column;
+    gap: clamp(4px, 1vw, 6px);
+    padding: clamp(6px, 1.5vw, 10px);
+    background: rgba(255,255,255,.04);
+    border-radius: 14px;
+  }
+  .frame-row { display: flex; gap: clamp(4px, 1vw, 6px); justify-content: center; }
+  .cell {
+    width: clamp(16px, 5.2vw, 26px);
+    height: clamp(16px, 5.2vw, 26px);
+    border-radius: 50%;
+    border: 2px solid var(--muted);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(0.7rem, 2.6vw, 0.95rem);
+    font-weight: 900;
+    color: var(--accent2);
+  }
+  .cell.empty { background: transparent; }
+  .cell.on-a { background: var(--accent); border-color: var(--accent); }
+  .cell.on-b { background: var(--cyan); border-color: var(--cyan); }
+  .cell.gone { background: transparent; border-color: var(--accent2); opacity: .7; }
+  .cell.want { border-style: dashed; border-color: var(--star); background: rgba(255,216,3,.14); }
+  .cell.gap5 { margin-left: clamp(8px, 2.5vw, 14px); }
+
+  /* mini dot field inside option buttons */
+  .mini .cell { width: clamp(11px, 3.4vw, 15px); height: clamp(11px, 3.4vw, 15px); border-width: 1.5px; }
+  .mini .frame { padding: 5px; gap: 3px; }
+  .mini .frame-row { gap: 3px; }
+  .mini .cell.gap5 { margin-left: 6px; }
+
+  /* ── Dice (Würfelbild) ── */
+  .dice {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: clamp(4px, 1.6vw, 9px);
+    width: clamp(74px, 30vw, 116px);
+    height: clamp(74px, 30vw, 116px);
+    background: #fffffe;
+    border-radius: clamp(12px, 4vw, 18px);
+    padding: clamp(8px, 3vw, 14px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.35);
+  }
+  .pip { border-radius: 50%; background: #1a1932; }
+  .pip.off { background: transparent; }
+  .dice.dice-sm { width: clamp(48px, 16vw, 64px); height: clamp(48px, 16vw, 64px); padding: clamp(5px, 2vw, 8px); gap: clamp(3px, 1.2vw, 5px); border-radius: 10px; }
+
+  /* ── Objects to count ── */
+  .objects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(6px, 2.2vw, 14px);
+    justify-content: center;
+    align-items: center;
+    max-width: 95%;
+    margin: 0 auto;
+  }
+  .obj { font-size: clamp(1.6rem, 7vw, 2.6rem); line-height: 1; }
+
+  /* ── Compare cards (mehr / weniger / gleich) ── */
+  .compare-wrap { display: none; align-items: stretch; justify-content: center; gap: clamp(8px, 2.5vw, 16px); width: 100%; }
+  .compare-wrap.active { display: flex; }
+  .compare-card {
+    flex: 1;
+    max-width: 190px;
+    background: rgba(255,255,255,.06);
+    border: 3px solid transparent;
+    border-radius: 16px;
+    padding: clamp(10px, 2dvh, 16px) clamp(6px, 2vw, 12px);
+    cursor: pointer;
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(4px, 1.5vw, 8px);
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    min-height: clamp(90px, 17dvh, 150px);
+    transition: all .2s;
+    touch-action: manipulation;
+  }
+  @media (hover: hover) { .compare-card:hover { border-color: var(--accent); } }
+  .compare-card.correct { background: rgba(44,182,125,.25); border-color: var(--green); animation: pop .4s; }
+  .compare-card.wrong { background: rgba(229,49,112,.2); border-color: var(--accent2); animation: shake .4s; }
+  .compare-card .obj { font-size: clamp(1.3rem, 6vw, 2.1rem); }
+  .equal-btn {
+    align-self: center;
+    padding: clamp(10px, 2vh, 14px) clamp(8px, 2.5vw, 14px);
+    border: 2px solid var(--muted);
+    border-radius: 14px;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit;
+    font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+    font-weight: 900;
+    cursor: pointer;
+    transition: all .2s;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    white-space: nowrap;
+  }
+  .equal-btn.correct { background: rgba(44,182,125,.25); border-color: var(--green); }
+  .equal-btn.wrong { background: rgba(229,49,112,.2); border-color: var(--accent2); }
+
   /* ══ iPhone-specific: taller screens get more breathing room ══ */
   /* iPhone 17 Pro Max: 440x956 logical, iPhone 17: 393x852 logical */
   @media (max-width: 430px) and (min-height: 800px) {
@@ -404,7 +628,7 @@
     .screen { gap: 8px; }
     .task-card { padding: 16px 14px; }
     .answer-btn { min-height: 44px; padding: 10px 8px; font-size: 1.1rem; }
-    .task-question { font-size: 1.8rem; margin-bottom: 10px; }
+    .task-question { font-size: 1.8rem; margin-bottom: 8px; }
     .feedback { min-height: 24px; font-size: 0.9rem; }
   }
 
@@ -421,21 +645,67 @@
 </head>
 <body>
 
+<button id="muteBtn" aria-label="Ton an/aus">🔊</button>
+
 <div class="game-container">
 
-  <!-- ═══ START SCREEN ═══ -->
-  <div id="startScreen" class="screen active">
+  <!-- ═══ PROFILE SCREEN ═══ -->
+  <div id="profileScreen" class="screen active">
     <div class="hero-emoji">🦸‍♂️</div>
     <div class="title">Mathe-Held</div>
-    <div class="subtitle">Löse Aufgaben, sammle Sterne und werde zum Rechen-Champion!</div>
-    <div class="range-label">Wähle den Zahlenraum:</div>
-    <div class="range-options">
+    <div class="subtitle">Wer spielt heute?</div>
+    <div class="profile-options">
+      <button class="profile-btn" data-profile="lara">
+        <span class="pf-emoji">🌈</span>
+        <span class="pf-name">Lara</span>
+        <span class="pf-sub">Kindergarten</span>
+        <span class="pf-best" id="bestLara"></span>
+      </button>
+      <button class="profile-btn" data-profile="theo">
+        <span class="pf-emoji">🦸‍♂️</span>
+        <span class="pf-name">Theo</span>
+        <span class="pf-sub">1. Klasse</span>
+        <span class="pf-best" id="bestTheo"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ THEO SETUP ═══ -->
+  <div id="theoScreen" class="screen">
+    <div class="title setup-title">Theos Rechen-Abenteuer</div>
+    <div class="range-label">Zahlenraum</div>
+    <div class="range-options" id="theoRange">
       <button class="range-btn selected" data-max="10">bis 10</button>
       <button class="range-btn" data-max="20">bis 20</button>
-      <button class="range-btn" data-max="50">bis 50</button>
-      <button class="range-btn" data-max="100">bis 100</button>
     </div>
-    <button class="btn btn-primary" id="startBtn">Los geht's!</button>
+    <div class="range-label">Aufgaben</div>
+    <div class="type-options" id="theoTypes">
+      <button class="type-chip selected" data-type="plusminus">➕➖ Plus &amp; Minus<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="zehner">🌉 Zehnerübergang<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="zerlegung">🧩 Zerlegen &amp; Partner zu 10<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="doppeln">✨ Verdoppeln &amp; Halbieren<span class="chk">✓</span></button>
+    </div>
+    <button class="btn btn-primary" id="theoStart">Los geht's!</button>
+    <button class="btn btn-secondary" id="theoBack">Zurück</button>
+  </div>
+
+  <!-- ═══ LARA SETUP ═══ -->
+  <div id="laraScreen" class="screen">
+    <div class="title setup-title">Laras Zahlen-Welt</div>
+    <div class="range-label">Bis wohin?</div>
+    <div class="range-options" id="laraRange">
+      <button class="range-btn selected" data-max="5">bis 5</button>
+      <button class="range-btn" data-max="10">bis 10</button>
+    </div>
+    <div class="range-label">Aufgaben</div>
+    <div class="type-options" id="laraTypes">
+      <button class="type-chip selected" data-type="zaehlen">🍎 Zählen<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="wuerfel">🎲 Würfelbilder<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="vergleich">⚖️ Mehr oder weniger<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="zuordnen">🔢 Zahl &amp; Menge<span class="chk">✓</span></button>
+    </div>
+    <button class="btn btn-primary" id="laraStart">Los geht's!</button>
+    <button class="btn btn-secondary" id="laraBack">Zurück</button>
   </div>
 
   <!-- ═══ GAME SCREEN ═══ -->
@@ -451,8 +721,11 @@
 
     <div class="task-card">
       <div class="task-label" id="taskLabel">Aufgabe 1</div>
-      <div class="task-question" id="taskQuestion">3 + 4 = ?</div>
+      <div class="task-question" id="taskQuestion"></div>
+      <div class="task-sub" id="taskSub"></div>
+      <div class="visual" id="visual"></div>
       <div class="answers" id="answers"></div>
+      <div class="compare-wrap" id="compareArea"></div>
       <div class="feedback" id="feedback"></div>
       <div class="streak-bar" id="streakBar"></div>
     </div>
@@ -480,6 +753,7 @@
       </div>
     </div>
     <div id="sumMessage"></div>
+    <div id="sumExtra"></div>
     <div class="summary-actions">
       <button class="btn btn-primary" id="playAgainBtn">Nochmal spielen!</button>
       <button class="btn btn-secondary" id="backHomeBtn">Zurück zum Start</button>
@@ -502,7 +776,9 @@ document.addEventListener('gesturestart', e => e.preventDefault());
 
 // ═══════════ GAME STATE ═══════════
 const state = {
-  maxNum: 10,
+  profile: null,        // 'lara' | 'theo'
+  range: 10,            // Theo: 10/20 · Lara: 5/10
+  types: [],            // enabled task-type ids for the chosen profile
   level: 1,
   stars: 0,
   xp: 0,
@@ -511,9 +787,11 @@ const state = {
   total: 0,
   streak: 0,
   bestStreak: 0,
-  questionsPerRound: 15,
+  questionsPerRound: 12,
   questionNum: 0,
   answered: false,
+  current: null,        // current question object
+  answerEls: [],        // [{ el, value }] for highlighting the correct choice
 };
 
 const PRAISE = [
@@ -530,10 +808,14 @@ const LEVEL_MSGS = [
   'Dein Gehirn glüht!',
   'Nichts kann dich aufhalten!',
 ];
+const OBJECTS = ['🍎','⭐','🐟','🌸','🐝','🚗','🎈','🍓','🐢','🦋'];
+
 // ═══════════ DOM REFS ═══════════
 const $ = id => document.getElementById(id);
 const screens = {
-  start: $('startScreen'),
+  profile: $('profileScreen'),
+  theo: $('theoScreen'),
+  lara: $('laraScreen'),
   game: $('gameScreen'),
   summary: $('summaryScreen'),
 };
@@ -541,25 +823,230 @@ const screens = {
 function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
   screens[name].classList.add('active');
+  if (name === 'profile') renderProfileStats();
 }
 
-// ═══════════ RANGE SELECTION ═══════════
-document.querySelectorAll('.range-btn').forEach(btn => {
+// ═══════════ PERSISTENCE (Fortschrittsspeicher) ═══════════
+const STORE_KEY = 'matheheld_v1';
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveStore() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+}
+const store = loadStore();
+state.muted = !!store.muted;
+
+function profileStats(p) {
+  if (!store[p]) store[p] = { totalStars: 0, bestLevel: 1, bestStreak: 0, games: 0, bestAccuracy: 0 };
+  return store[p];
+}
+
+function renderProfileStats() {
+  [['lara', 'bestLara'], ['theo', 'bestTheo']].forEach(([p, id]) => {
+    const s = store[p];
+    $(id).textContent = (s && s.totalStars > 0)
+      ? `⭐ ${s.totalStars} · 🏅 Level ${s.bestLevel}`
+      : 'Neu hier!';
+  });
+}
+
+// Pre-select the last-used range and task types for a profile.
+function applySetup(profile) {
+  const s = profileStats(profile);
+  const rangeId = profile === 'lara' ? 'laraRange' : 'theoRange';
+  const typesId = profile === 'lara' ? 'laraTypes' : 'theoTypes';
+  if (s.lastRange) {
+    document.querySelectorAll('#' + rangeId + ' .range-btn').forEach(b =>
+      b.classList.toggle('selected', parseInt(b.dataset.max) === s.lastRange));
+  }
+  if (Array.isArray(s.lastTypes) && s.lastTypes.length) {
+    document.querySelectorAll('#' + typesId + ' .type-chip').forEach(b =>
+      b.classList.toggle('selected', s.lastTypes.includes(b.dataset.type)));
+  }
+}
+
+// Record a finished round; return the list of newly broken records.
+function commitProgress() {
+  const s = profileStats(state.profile);
+  const acc = state.total ? Math.round((state.correct / state.total) * 100) : 0;
+  s.totalStars += state.stars;
+  s.games += 1;
+  const records = [];
+  if (state.level > s.bestLevel) { s.bestLevel = state.level; records.push('Level ' + state.level); }
+  if (state.bestStreak > s.bestStreak) { s.bestStreak = state.bestStreak; records.push('Serie ' + state.bestStreak); }
+  if (acc > s.bestAccuracy) { s.bestAccuracy = acc; records.push('Genauigkeit ' + acc + '%'); }
+  saveStore();
+  return records;
+}
+
+// ═══════════ SOUND (Web Audio, synthesised – no audio files) ═══════════
+let audioCtx = null;
+function ensureAudio() {
+  if (state.muted) return null;
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { audioCtx = new AC(); } catch (e) { return null; }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, start, dur, type, peak) {
+  const ctx = audioCtx;
+  if (!ctx) return;
+  const t0 = ctx.currentTime + start;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak || 0.2, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.03);
+}
+function sfxCorrect() { if (!ensureAudio()) return; tone(659.25, 0, 0.14, 'triangle'); tone(987.77, 0.10, 0.20, 'triangle'); }
+function sfxWrong()   { if (!ensureAudio()) return; tone(196, 0, 0.20, 'sine', 0.16); tone(146.83, 0.11, 0.24, 'sine', 0.16); }
+function sfxLevelUp() { if (!ensureAudio()) return; [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.11, 0.22, 'triangle', 0.22)); }
+function sfxTap()     { if (!ensureAudio()) return; tone(880, 0, 0.06, 'sine', 0.08); }
+
+function updateMuteIcon() { $('muteBtn').textContent = state.muted ? '🔇' : '🔊'; }
+$('muteBtn').addEventListener('click', () => {
+  state.muted = !state.muted;
+  store.muted = state.muted;
+  saveStore();
+  updateMuteIcon();
+  if (!state.muted) { ensureAudio(); sfxTap(); }
+});
+
+// ═══════════ HELPERS ═══════════
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// Build 3 distractors around `answer` within [lo, hi] and return shuffled options.
+function makeOptions(answer, lo, hi) {
+  const wrongs = new Set();
+  let guard = 0;
+  while (wrongs.size < 3 && guard++ < 200) {
+    let w = answer + randInt(-3, 3);
+    if (w < lo || w > hi) w = randInt(lo, hi);
+    if (w !== answer) wrongs.add(w);
+  }
+  let f = lo;
+  while (wrongs.size < 3 && f <= hi) { if (f !== answer) wrongs.add(f); f++; }
+  return shuffle([answer, ...wrongs]).map(v => ({ value: v, label: String(v) }));
+}
+
+// ── Visual builders (return HTML strings) ──
+function rowsHTML(classes, perRow, gapAfter) {
+  let html = '';
+  for (let r = 0; r < classes.length; r += perRow) {
+    html += '<div class="frame-row">';
+    for (let i = r; i < Math.min(r + perRow, classes.length); i++) {
+      const idxInRow = i - r;
+      const extra = (gapAfter && idxInRow === gapAfter) ? ' gap5' : '';
+      const c = classes[i];
+      const txt = c.indexOf('gone') !== -1 ? '✕' : '';
+      html += `<div class="cell ${c}${extra}">${txt}</div>`;
+    }
+    html += '</div>';
+  }
+  return `<div class="frame">${html}</div>`;
+}
+const tenFrame = classes => rowsHTML(classes, 5, null);      // 2 rows × 5 (Zehnerfeld)
+const twentyFrame = classes => rowsHTML(classes, 10, 5);     // 2 rows × 10, 5er-gap (Zwanzigerfeld)
+const dotRows = classes => rowsHTML(classes, 5, null);       // groups of 5
+
+function fieldFor(capacity, classes) {
+  return capacity >= 20 ? twentyFrame(classes) : tenFrame(classes);
+}
+
+function diceHTML(n, small) {
+  const map = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
+  const on = new Set(map[n] || []);
+  let pips = '';
+  for (let i = 0; i < 9; i++) pips += `<div class="pip${on.has(i) ? '' : ' off'}"></div>`;
+  return `<div class="dice${small ? ' dice-sm' : ''}">${pips}</div>`;
+}
+// small picture of a quantity for option buttons
+function miniMenge(n) {
+  if (n <= 6) return diceHTML(n, true);
+  const classes = [];
+  for (let i = 0; i < 10; i++) classes.push(i < n ? 'on-a' : 'empty');
+  return `<div class="mini">${tenFrame(classes)}</div>`;
+}
+function objectsHTML(n, emoji) {
+  let s = '<div class="objects">';
+  for (let i = 0; i < n; i++) s += `<span class="obj">${emoji}</span>`;
+  return s + '</div>';
+}
+
+// ═══════════ PROFILE / SETUP WIRING ═══════════
+document.querySelectorAll('.profile-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    state.maxNum = parseInt(btn.dataset.max);
+    state.profile = btn.dataset.profile;
+    ensureAudio();            // unlock audio on this user gesture
+    applySetup(state.profile);
+    showScreen(state.profile === 'lara' ? 'lara' : 'theo');
   });
 });
 
-// ═══════════ START GAME ═══════════
-$('startBtn').addEventListener('click', startGame);
-$('playAgainBtn').addEventListener('click', startGame);
-$('backHomeBtn').addEventListener('click', () => {
-  resetState();
-  showScreen('start');
-});
+// single-select range buttons within a container
+function wireRange(containerId) {
+  document.querySelectorAll('#' + containerId + ' .range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#' + containerId + ' .range-btn')
+        .forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+}
+// multi-select type chips
+function wireTypes(containerId) {
+  document.querySelectorAll('#' + containerId + ' .type-chip').forEach(btn => {
+    btn.addEventListener('click', () => btn.classList.toggle('selected'));
+  });
+}
+wireRange('theoRange'); wireTypes('theoTypes');
+wireRange('laraRange'); wireTypes('laraTypes');
 
+function readSetup(rangeId, typesId) {
+  const rangeBtn = document.querySelector('#' + rangeId + ' .range-btn.selected');
+  state.range = parseInt(rangeBtn.dataset.max);
+  let types = [...document.querySelectorAll('#' + typesId + ' .type-chip.selected')]
+    .map(b => b.dataset.type);
+  if (types.length === 0) {
+    // nothing picked → enable everything so a round can always start
+    types = [...document.querySelectorAll('#' + typesId + ' .type-chip')].map(b => b.dataset.type);
+  }
+  state.types = types;
+  // remember this setup for next time
+  const s = profileStats(state.profile);
+  s.lastRange = state.range;
+  s.lastTypes = types;
+  saveStore();
+}
+
+$('theoStart').addEventListener('click', () => { readSetup('theoRange', 'theoTypes'); startGame(); });
+$('laraStart').addEventListener('click', () => { readSetup('laraRange', 'laraTypes'); startGame(); });
+$('theoBack').addEventListener('click', () => showScreen('profile'));
+$('laraBack').addEventListener('click', () => showScreen('profile'));
+
+$('playAgainBtn').addEventListener('click', startGame);
+$('backHomeBtn').addEventListener('click', () => showScreen('profile'));
+
+// ═══════════ GAME LIFECYCLE ═══════════
 function resetState() {
   state.level = 1;
   state.stars = 0;
@@ -575,91 +1062,305 @@ function resetState() {
 
 function startGame() {
   resetState();
+  state.questionsPerRound = state.profile === 'lara' ? 10 : 12;
   showScreen('game');
   updateHUD();
   nextQuestion();
 }
 
-// ═══════════ GENERATE QUESTION ═══════════
+// ═══════════ QUESTION GENERATION ═══════════
+// Each builder returns:
+//   { kind:'choice'|'compare', question, sub, visual, options?, answer, answerText,
+//     left?, right? }
 function generateQuestion() {
-  const max = state.maxNum;
+  const type = pick(state.types);
+  if (state.profile === 'lara') {
+    if (type === 'zaehlen')   return buildZaehlen();
+    if (type === 'wuerfel')   return buildWuerfel();
+    if (type === 'vergleich') return buildVergleich();
+    return buildZuordnen();
+  }
+  // Theo
+  if (type === 'plusminus') return buildPlusMinus(false);
+  if (type === 'zehner')    return buildZehner();
+  if (type === 'zerlegung') return buildZerlegung();
+  return buildDoppeln();
+}
+
+// ── Theo: Plus & Minus with Zehner-/Zwanzigerfeld support ──
+function buildPlusMinus(forceCross) {
+  const cap = state.range;            // 10 or 20
   const isAdd = Math.random() < 0.5;
-  let a, b, answer;
+  let a, b, answer, classes = [];
 
   if (isAdd) {
-    a = randInt(0, max);
-    b = randInt(0, max - a);
+    a = randInt(0, cap);
+    b = randInt(0, cap - a);
     answer = a + b;
+    for (let i = 0; i < cap; i++) classes.push(i < a ? 'on-a' : (i < a + b ? 'on-b' : 'empty'));
   } else {
-    a = randInt(1, max);
+    a = randInt(1, cap);
     b = randInt(0, a);
     answer = a - b;
+    for (let i = 0; i < cap; i++) {
+      if (i < a) classes.push(i >= a - b ? 'gone' : 'on-a');
+      else classes.push('empty');
+    }
   }
-
   const op = isAdd ? '+' : '−';
-  const text = `${a} ${op} ${b} = ?`;
+  return {
+    kind: 'choice',
+    question: `${a} ${op} ${b} = ?`,
+    sub: '',
+    visual: fieldFor(cap, classes),
+    options: makeOptions(answer, 0, cap),
+    answer,
+    answerText: String(answer),
+  };
+}
 
-  const wrongs = new Set();
-  while (wrongs.size < 3) {
-    let w = answer + randInt(-5, 5);
-    if (w < 0) w = randInt(0, max);
-    if (w !== answer) wrongs.add(w);
+// ── Theo: Zehnerübergang (addition across 10, always in the 20-field) ──
+function buildZehner() {
+  const a = randInt(2, 9);
+  const b = randInt(Math.max(2, 11 - a), Math.min(9, 20 - a)); // ensures a+b in 11..20
+  const answer = a + b;
+  const classes = [];
+  for (let i = 0; i < 20; i++) classes.push(i < a ? 'on-a' : (i < a + b ? 'on-b' : 'empty'));
+  return {
+    kind: 'choice',
+    question: `${a} + ${b} = ?`,
+    sub: 'Denk an die 10 als Rastplatz!',
+    visual: twentyFrame(classes),
+    options: makeOptions(answer, 0, 20),
+    answer,
+    answerText: String(answer),
+  };
+}
+
+// ── Theo: Zahlzerlegung & verliebte Zahlen (Partner zu 10) ──
+function buildZerlegung() {
+  if (Math.random() < 0.5) {
+    // verliebte Zahlen: a + ? = 10
+    const a = randInt(1, 9);
+    const answer = 10 - a;
+    const classes = [];
+    for (let i = 0; i < 10; i++) classes.push(i < a ? 'on-a' : 'want');
+    return {
+      kind: 'choice',
+      question: `${a} + ? = 10`,
+      sub: 'Wie viele fehlen bis 10?',
+      visual: tenFrame(classes),
+      options: makeOptions(answer, 0, 10),
+      answer,
+      answerText: String(answer),
+    };
   }
-
-  const options = shuffle([answer, ...wrongs]);
-  return { text, answer, options };
+  // Zerlegung: n = part + ?
+  const nMax = Math.min(10, state.range);
+  const n = randInt(4, nMax);
+  const part = randInt(1, n - 1);
+  const answer = n - part;
+  const classes = [];
+  for (let i = 0; i < n; i++) classes.push(i < part ? 'on-a' : 'want');
+  return {
+    kind: 'choice',
+    question: `${n} = ${part} + ?`,
+    sub: 'Zerlege die Zahl!',
+    visual: dotRows(classes),
+    options: makeOptions(answer, 0, 10),
+    answer,
+    answerText: String(answer),
+  };
 }
 
-function randInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+// ── Theo: Verdoppeln & Halbieren ──
+function buildDoppeln() {
+  const cap = state.range;
+  if (Math.random() < 0.5) {
+    // Verdoppeln: n + n
+    const n = randInt(1, Math.floor(cap / 2));
+    const answer = 2 * n;
+    const classes = [];
+    for (let i = 0; i < answer; i++) classes.push(i < n ? 'on-a' : 'on-b');
+    return {
+      kind: 'choice',
+      question: `${n} + ${n} = ?`,
+      sub: 'Das Doppelte!',
+      visual: dotRows(classes),
+      options: makeOptions(answer, 0, cap),
+      answer,
+      answerText: String(answer),
+    };
   }
-  return arr;
+  // Halbieren: half of an even number
+  const m = 2 * randInt(1, Math.floor(cap / 2));
+  const answer = m / 2;
+  const classes = [];
+  for (let i = 0; i < m; i++) classes.push(i < answer ? 'on-a' : 'on-b');
+  return {
+    kind: 'choice',
+    question: `Die Hälfte von ${m} = ?`,
+    sub: 'In zwei gleiche Teile!',
+    visual: dotRows(classes),
+    options: makeOptions(answer, 0, cap),
+    answer,
+    answerText: String(answer),
+  };
 }
-// ═══════════ NEXT QUESTION ═══════════
+
+// ── Lara: Zählen (count objects) ──
+function buildZaehlen() {
+  const n = randInt(1, state.range);
+  const emoji = pick(OBJECTS);
+  return {
+    kind: 'choice',
+    question: '',
+    sub: 'Wie viele?',
+    visual: objectsHTML(n, emoji),
+    options: makeOptions(n, 1, state.range),
+    answer: n,
+    answerText: String(n),
+  };
+}
+
+// ── Lara: Würfelbilder (subitizing 1–6) ──
+function buildWuerfel() {
+  const n = randInt(1, 6);
+  return {
+    kind: 'choice',
+    question: '',
+    sub: 'Wie viele Punkte?',
+    visual: diceHTML(n, false),
+    options: makeOptions(n, 1, 6),
+    answer: n,
+    answerText: String(n),
+  };
+}
+
+// ── Lara: Mehr / Weniger / Gleich ──
+function buildVergleich() {
+  const emoji = pick(OBJECTS);
+  let left = randInt(1, state.range);
+  let right = randInt(1, state.range);
+  if (Math.random() < 0.25) right = left;           // sometimes equal
+  const answer = left > right ? 'left' : (left < right ? 'right' : 'equal');
+  const answerText = answer === 'equal' ? 'Gleich viel!'
+    : (answer === 'left' ? 'Links sind mehr!' : 'Rechts sind mehr!');
+  return {
+    kind: 'compare',
+    question: '',
+    sub: 'Wo sind mehr? Tippe das Feld – oder „Gleich".',
+    left:  objectsHTML(left, emoji),
+    right: objectsHTML(right, emoji),
+    answer,
+    answerText,
+  };
+}
+
+// ── Lara: Ziffer ↔ Menge ──
+function buildZuordnen() {
+  const n = randInt(1, state.range);
+  if (Math.random() < 0.5) {
+    // Menge → Ziffer
+    return {
+      kind: 'choice',
+      question: '',
+      sub: 'Welche Zahl passt?',
+      visual: n <= 6 ? diceHTML(n, false) : miniMenge(n),
+      options: makeOptions(n, 1, state.range),
+      answer: n,
+      answerText: String(n),
+    };
+  }
+  // Ziffer → Menge (option buttons show pictures)
+  const opts = makeOptions(n, 1, state.range).map(o => ({ value: o.value, html: miniMenge(o.value) }));
+  return {
+    kind: 'choice',
+    question: String(n),
+    sub: 'Welches Bild zeigt diese Zahl?',
+    visual: '',
+    options: opts,
+    answer: n,
+    answerText: String(n),
+  };
+}
+
+// ═══════════ RENDER QUESTION ═══════════
 function nextQuestion() {
-  if (state.questionNum >= state.questionsPerRound) {
-    showSummary();
-    return;
-  }
+  if (state.questionNum >= state.questionsPerRound) { showSummary(); return; }
 
   state.questionNum++;
   state.answered = false;
   const q = generateQuestion();
+  state.current = q;
+  state.answerEls = [];
 
   $('taskLabel').textContent = `Aufgabe ${state.questionNum} von ${state.questionsPerRound}`;
-  $('taskQuestion').textContent = q.text;
+  $('taskQuestion').textContent = q.question || '';
+  $('taskSub').textContent = q.sub || '';
+  $('visual').innerHTML = q.visual || '';
   $('feedback').textContent = '';
   $('feedback').className = 'feedback';
 
   const answersEl = $('answers');
+  const compareEl = $('compareArea');
   answersEl.innerHTML = '';
+  compareEl.innerHTML = '';
+  compareEl.classList.remove('active');
+  answersEl.style.display = 'grid';
 
-  q.options.forEach(opt => {
-    const btn = document.createElement('button');
-    btn.className = 'answer-btn';
-    btn.textContent = opt;
-    btn.addEventListener('click', () => handleAnswer(btn, opt, q.answer));
-    answersEl.appendChild(btn);
-  });
+  if (q.kind === 'compare') {
+    answersEl.style.display = 'none';
+    compareEl.classList.add('active');
+
+    const leftCard = document.createElement('div');
+    leftCard.className = 'compare-card';
+    leftCard.innerHTML = q.left;
+    leftCard.addEventListener('click', () => handleAnswer(leftCard, 'left'));
+
+    const eqBtn = document.createElement('button');
+    eqBtn.className = 'equal-btn';
+    eqBtn.textContent = '=';
+    eqBtn.addEventListener('click', () => handleAnswer(eqBtn, 'equal'));
+
+    const rightCard = document.createElement('div');
+    rightCard.className = 'compare-card';
+    rightCard.innerHTML = q.right;
+    rightCard.addEventListener('click', () => handleAnswer(rightCard, 'right'));
+
+    compareEl.appendChild(leftCard);
+    compareEl.appendChild(eqBtn);
+    compareEl.appendChild(rightCard);
+    state.answerEls = [
+      { el: leftCard, value: 'left' },
+      { el: eqBtn, value: 'equal' },
+      { el: rightCard, value: 'right' },
+    ];
+  } else {
+    q.options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'answer-btn';
+      if (opt.html) btn.innerHTML = opt.html; else btn.textContent = opt.label;
+      btn.addEventListener('click', () => handleAnswer(btn, opt.value));
+      answersEl.appendChild(btn);
+      state.answerEls.push({ el: btn, value: opt.value });
+    });
+  }
 
   renderStreakBar();
 }
 
 // ═══════════ HANDLE ANSWER ═══════════
-function handleAnswer(btn, chosen, correct) {
+function handleAnswer(el, chosen) {
   if (state.answered) return;
   state.answered = true;
   state.total++;
 
-  const allBtns = document.querySelectorAll('.answer-btn');
+  const q = state.current;
+  const isCorrect = chosen === q.answer;
 
-  if (chosen === correct) {
-    btn.classList.add('correct');
+  if (isCorrect) {
+    el.classList.add('correct');
     state.correct++;
     state.streak++;
     if (state.streak > state.bestStreak) state.bestStreak = state.streak;
@@ -672,47 +1373,49 @@ function handleAnswer(btn, chosen, correct) {
     $('feedback').textContent = pick(PRAISE) + (earned > 1 ? ` +${earned} ⭐` : ' +1 ⭐');
     $('feedback').className = 'feedback good';
 
-    spawnStarFloat(btn);
+    sfxCorrect();
+    spawnStarFloat(el);
 
     if (state.xp >= state.xpNeeded) {
       state.level++;
       state.xp = 0;
       state.xpNeeded = Math.min(state.xpNeeded + 2, 15);
-      setTimeout(() => showLevelUp(), 500);
+      setTimeout(showLevelUp, 500);
     }
   } else {
-    btn.classList.add('wrong');
+    el.classList.add('wrong');
     state.streak = 0;
-    allBtns.forEach(b => {
-      if (parseInt(b.textContent) === correct) b.classList.add('correct');
-    });
-    $('feedback').textContent = pick(ENCOURAGE) + ` Die Antwort ist ${correct}.`;
+    // highlight the correct choice
+    const right = state.answerEls.find(a => a.value === q.answer);
+    if (right) right.el.classList.add('correct');
+    $('feedback').textContent = pick(ENCOURAGE) + ` Richtig ist: ${q.answerText}`;
     $('feedback').className = 'feedback bad';
+    sfxWrong();
   }
 
   renderStreakBar();
   updateHUD();
 
-  allBtns.forEach(b => b.style.pointerEvents = 'none');
-  setTimeout(nextQuestion, 1600);
+  state.answerEls.forEach(a => a.el.style.pointerEvents = 'none');
+  setTimeout(nextQuestion, 1700);
 }
 
-function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 // ═══════════ STREAK BAR ═══════════
 function renderStreakBar() {
   const bar = $('streakBar');
   bar.innerHTML = '';
   const target = 3;
+  const filled = state.streak === 0 ? 0 : (state.streak % target === 0 ? target : state.streak % target);
   for (let i = 0; i < target; i++) {
     const dot = document.createElement('div');
-    dot.className = 'streak-dot' + (i < (state.streak % target || (state.streak > 0 && state.streak % target === 0 ? target : 0)) ? ' filled' : '');
+    dot.className = 'streak-dot' + (i < filled ? ' filled' : '');
     bar.appendChild(dot);
   }
 }
 
 // ═══════════ FLOATING STAR ═══════════
-function spawnStarFloat(btn) {
-  const rect = btn.getBoundingClientRect();
+function spawnStarFloat(el) {
+  const rect = el.getBoundingClientRect();
   const star = document.createElement('div');
   star.className = 'star-float';
   star.textContent = '⭐';
@@ -739,8 +1442,8 @@ function showLevelUp() {
   $('lvlUpText').textContent = `Level ${state.level}!`;
   $('lvlUpSub').textContent = pick(LEVEL_MSGS);
   $('levelUpOverlay').classList.add('active');
+  sfxLevelUp();
 }
-
 $('lvlUpBtn').addEventListener('click', () => {
   $('levelUpOverlay').classList.remove('active');
 });
@@ -760,7 +1463,18 @@ function showSummary() {
   else if (acc >= 60) msg = '💪 Gut gemacht! Übung macht den Meister!';
   else msg = '🚀 Weiter üben – du schaffst das!';
   $('sumMessage').textContent = msg;
+
+  // persist progress and show cumulative totals + any new records
+  const records = commitProgress();
+  const s = profileStats(state.profile);
+  let extra = `Insgesamt: ⭐ ${s.totalStars} · 🏅 Level ${s.bestLevel}`;
+  if (records.length) extra += ` — <span class="rec">🏆 Neuer Rekord: ${records.join(', ')}!</span>`;
+  $('sumExtra').innerHTML = extra;
 }
+
+// ═══════════ INIT ═══════════
+updateMuteIcon();
+renderProfileStats();
 </script>
 
 </body>
