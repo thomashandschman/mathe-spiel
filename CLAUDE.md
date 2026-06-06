@@ -74,6 +74,20 @@ Everything lives in one file. Layout:
   `diceHTML` draws dice pips; `objectsHTML` lays out emoji to count;
   `miniMenge` draws small quantity pictures for option buttons.
 
+- **Persistence** (`localStorage`, key `matheheld_v1`): a single `store` object
+  holds the global `muted` flag and per-profile stats (`totalStars`, `bestLevel`,
+  `bestStreak`, `games`, `bestAccuracy`, plus `lastRange`/`lastTypes`).
+  `commitProgress()` runs once per finished round (from `showSummary`) to
+  accumulate totals and detect new records; `renderProfileStats()` shows each
+  child's totals on the profile screen; `applySetup()` restores the last-used
+  range/task-types when a profile is opened.
+- **Sound** (Web Audio, no audio files): `tone()` synthesises notes; `sfxCorrect`
+  / `sfxWrong` / `sfxLevelUp` / `sfxTap` are the cues. `ensureAudio()` lazily
+  creates/resumes the `AudioContext` and must be triggered from a user gesture
+  (done on profile selection and on each answer) — important for iOS, which
+  blocks audio until then. All sfx no-op when `state.muted`; `#muteBtn` toggles
+  and persists it.
+
 When changing scoring/leveling, edit `handleAnswer`. To add or tune an exercise
 type, edit the relevant `build*()` function (and register it in
 `generateQuestion` + a chip in the setup screen). `makeOptions(answer, lo, hi)`

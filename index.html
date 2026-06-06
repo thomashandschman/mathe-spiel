@@ -429,6 +429,33 @@
   .pf-emoji { font-size: clamp(2.8rem, 11vw, 4rem); }
   .pf-name { font-size: clamp(1.2rem, 5vw, 1.6rem); font-weight: 900; }
   .pf-sub { font-size: clamp(0.75rem, 3vw, 0.9rem); color: var(--muted); }
+  .pf-best { font-size: clamp(0.72rem, 2.9vw, 0.88rem); color: var(--star); font-weight: 700; margin-top: 4px; min-height: 1.1em; }
+
+  /* ── Mute toggle (fixed, clears the notch) ── */
+  #muteBtn {
+    position: fixed;
+    top: calc(8px + var(--sat));
+    right: calc(10px + var(--sar));
+    z-index: 90;
+    width: clamp(38px, 10vw, 46px);
+    height: clamp(38px, 10vw, 46px);
+    border-radius: 50%;
+    border: none;
+    background: rgba(26,25,50,.85);
+    color: var(--text);
+    font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    touch-action: manipulation;
+    -webkit-appearance: none;
+  }
+  #muteBtn:active { transform: scale(.92); }
+
+  #sumExtra { color: var(--muted); font-size: clamp(0.85rem, 3.4vw, 1rem); font-weight: 700; text-align: center; }
+  #sumExtra .rec { color: var(--star); }
 
   /* ══════════ TYPE CHIPS (multi-select) ══════════ */
   .type-options {
@@ -618,6 +645,8 @@
 </head>
 <body>
 
+<button id="muteBtn" aria-label="Ton an/aus">🔊</button>
+
 <div class="game-container">
 
   <!-- ═══ PROFILE SCREEN ═══ -->
@@ -630,11 +659,13 @@
         <span class="pf-emoji">🌈</span>
         <span class="pf-name">Lara</span>
         <span class="pf-sub">Kindergarten</span>
+        <span class="pf-best" id="bestLara"></span>
       </button>
       <button class="profile-btn" data-profile="theo">
         <span class="pf-emoji">🦸‍♂️</span>
         <span class="pf-name">Theo</span>
         <span class="pf-sub">1. Klasse</span>
+        <span class="pf-best" id="bestTheo"></span>
       </button>
     </div>
   </div>
@@ -722,6 +753,7 @@
       </div>
     </div>
     <div id="sumMessage"></div>
+    <div id="sumExtra"></div>
     <div class="summary-actions">
       <button class="btn btn-primary" id="playAgainBtn">Nochmal spielen!</button>
       <button class="btn btn-secondary" id="backHomeBtn">Zurück zum Start</button>
@@ -791,7 +823,103 @@ const screens = {
 function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
   screens[name].classList.add('active');
+  if (name === 'profile') renderProfileStats();
 }
+
+// ═══════════ PERSISTENCE (Fortschrittsspeicher) ═══════════
+const STORE_KEY = 'matheheld_v1';
+function loadStore() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveStore() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+}
+const store = loadStore();
+state.muted = !!store.muted;
+
+function profileStats(p) {
+  if (!store[p]) store[p] = { totalStars: 0, bestLevel: 1, bestStreak: 0, games: 0, bestAccuracy: 0 };
+  return store[p];
+}
+
+function renderProfileStats() {
+  [['lara', 'bestLara'], ['theo', 'bestTheo']].forEach(([p, id]) => {
+    const s = store[p];
+    $(id).textContent = (s && s.totalStars > 0)
+      ? `⭐ ${s.totalStars} · 🏅 Level ${s.bestLevel}`
+      : 'Neu hier!';
+  });
+}
+
+// Pre-select the last-used range and task types for a profile.
+function applySetup(profile) {
+  const s = profileStats(profile);
+  const rangeId = profile === 'lara' ? 'laraRange' : 'theoRange';
+  const typesId = profile === 'lara' ? 'laraTypes' : 'theoTypes';
+  if (s.lastRange) {
+    document.querySelectorAll('#' + rangeId + ' .range-btn').forEach(b =>
+      b.classList.toggle('selected', parseInt(b.dataset.max) === s.lastRange));
+  }
+  if (Array.isArray(s.lastTypes) && s.lastTypes.length) {
+    document.querySelectorAll('#' + typesId + ' .type-chip').forEach(b =>
+      b.classList.toggle('selected', s.lastTypes.includes(b.dataset.type)));
+  }
+}
+
+// Record a finished round; return the list of newly broken records.
+function commitProgress() {
+  const s = profileStats(state.profile);
+  const acc = state.total ? Math.round((state.correct / state.total) * 100) : 0;
+  s.totalStars += state.stars;
+  s.games += 1;
+  const records = [];
+  if (state.level > s.bestLevel) { s.bestLevel = state.level; records.push('Level ' + state.level); }
+  if (state.bestStreak > s.bestStreak) { s.bestStreak = state.bestStreak; records.push('Serie ' + state.bestStreak); }
+  if (acc > s.bestAccuracy) { s.bestAccuracy = acc; records.push('Genauigkeit ' + acc + '%'); }
+  saveStore();
+  return records;
+}
+
+// ═══════════ SOUND (Web Audio, synthesised – no audio files) ═══════════
+let audioCtx = null;
+function ensureAudio() {
+  if (state.muted) return null;
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { audioCtx = new AC(); } catch (e) { return null; }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, start, dur, type, peak) {
+  const ctx = audioCtx;
+  if (!ctx) return;
+  const t0 = ctx.currentTime + start;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(peak || 0.2, t0 + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(t0); osc.stop(t0 + dur + 0.03);
+}
+function sfxCorrect() { if (!ensureAudio()) return; tone(659.25, 0, 0.14, 'triangle'); tone(987.77, 0.10, 0.20, 'triangle'); }
+function sfxWrong()   { if (!ensureAudio()) return; tone(196, 0, 0.20, 'sine', 0.16); tone(146.83, 0.11, 0.24, 'sine', 0.16); }
+function sfxLevelUp() { if (!ensureAudio()) return; [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.11, 0.22, 'triangle', 0.22)); }
+function sfxTap()     { if (!ensureAudio()) return; tone(880, 0, 0.06, 'sine', 0.08); }
+
+function updateMuteIcon() { $('muteBtn').textContent = state.muted ? '🔇' : '🔊'; }
+$('muteBtn').addEventListener('click', () => {
+  state.muted = !state.muted;
+  store.muted = state.muted;
+  saveStore();
+  updateMuteIcon();
+  if (!state.muted) { ensureAudio(); sfxTap(); }
+});
 
 // ═══════════ HELPERS ═══════════
 function randInt(min, max) {
@@ -868,6 +996,8 @@ function objectsHTML(n, emoji) {
 document.querySelectorAll('.profile-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     state.profile = btn.dataset.profile;
+    ensureAudio();            // unlock audio on this user gesture
+    applySetup(state.profile);
     showScreen(state.profile === 'lara' ? 'lara' : 'theo');
   });
 });
@@ -901,6 +1031,11 @@ function readSetup(rangeId, typesId) {
     types = [...document.querySelectorAll('#' + typesId + ' .type-chip')].map(b => b.dataset.type);
   }
   state.types = types;
+  // remember this setup for next time
+  const s = profileStats(state.profile);
+  s.lastRange = state.range;
+  s.lastTypes = types;
+  saveStore();
 }
 
 $('theoStart').addEventListener('click', () => { readSetup('theoRange', 'theoTypes'); startGame(); });
@@ -1238,6 +1373,7 @@ function handleAnswer(el, chosen) {
     $('feedback').textContent = pick(PRAISE) + (earned > 1 ? ` +${earned} ⭐` : ' +1 ⭐');
     $('feedback').className = 'feedback good';
 
+    sfxCorrect();
     spawnStarFloat(el);
 
     if (state.xp >= state.xpNeeded) {
@@ -1254,6 +1390,7 @@ function handleAnswer(el, chosen) {
     if (right) right.el.classList.add('correct');
     $('feedback').textContent = pick(ENCOURAGE) + ` Richtig ist: ${q.answerText}`;
     $('feedback').className = 'feedback bad';
+    sfxWrong();
   }
 
   renderStreakBar();
@@ -1305,6 +1442,7 @@ function showLevelUp() {
   $('lvlUpText').textContent = `Level ${state.level}!`;
   $('lvlUpSub').textContent = pick(LEVEL_MSGS);
   $('levelUpOverlay').classList.add('active');
+  sfxLevelUp();
 }
 $('lvlUpBtn').addEventListener('click', () => {
   $('levelUpOverlay').classList.remove('active');
@@ -1325,7 +1463,18 @@ function showSummary() {
   else if (acc >= 60) msg = '💪 Gut gemacht! Übung macht den Meister!';
   else msg = '🚀 Weiter üben – du schaffst das!';
   $('sumMessage').textContent = msg;
+
+  // persist progress and show cumulative totals + any new records
+  const records = commitProgress();
+  const s = profileStats(state.profile);
+  let extra = `Insgesamt: ⭐ ${s.totalStars} · 🏅 Level ${s.bestLevel}`;
+  if (records.length) extra += ` — <span class="rec">🏆 Neuer Rekord: ${records.join(', ')}!</span>`;
+  $('sumExtra').innerHTML = extra;
 }
+
+// ═══════════ INIT ═══════════
+updateMuteIcon();
+renderProfileStats();
 </script>
 
 </body>
