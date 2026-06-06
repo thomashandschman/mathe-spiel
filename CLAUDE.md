@@ -73,6 +73,15 @@ Everything lives in one file. Layout:
   `on-a`/`on-b`/`empty`/`gone`/`want` and a `gap5` class for the Fünfer-gap;
   `diceHTML` draws dice pips; `objectsHTML` lays out emoji to count;
   `miniMenge` draws small quantity pictures for option buttons.
+- **Learning animations** (CSS, with `prefers-reduced-motion` opt-out): filled
+  dots/objects/pips animate in *staggered in fill order* (renderers emit inline
+  `animation-delay`) so "adding" is visible; `want` cells pulse to mark the
+  unknown. On a correct answer the visual cheers, and `q.revealType` drives a
+  concept reveal — `'want'` fills the missing dots (`revealWant`, Zerlegung /
+  verliebte Zahlen), `'gone'` fades the subtracted dots (`revealGone`).
+- **Navigation chrome**: two fixed corner buttons outside `.game-container` —
+  `#muteBtn` (always shown) and `#backBtn` (shown only on the game screen via
+  `showScreen`), which returns to the active child's setup screen.
 
 - **Persistence** (`localStorage`, key `matheheld_v1`): a single `store` object
   holds the global `muted` flag and per-profile stats (`totalStars`, `bestLevel`,
