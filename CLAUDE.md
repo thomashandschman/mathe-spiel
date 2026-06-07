@@ -68,11 +68,15 @@ Everything lives in one file. Layout:
   (`buildPlusMinus`, `buildZehner`, `buildZerlegung`, `buildDoppeln`,
   `buildZaehlen`, `buildWuerfel`, `buildVergleich`, `buildZuordnen`). Each
   returns a question object: `{ kind:'choice'|'compare', question, sub,
-  visual (HTML string), options/left/right, answer, answerText }`. `nextQuestion`
-  renders it; multiple-choice options go in `#answers`, `compare` questions use
-  the tappable `#compareArea` (left card / `=` / right card). `handleAnswer`
-  compares the chosen value (number or `'left'|'right'|'equal'`) to `q.answer`,
-  using `state.answerEls` to highlight the correct choice on a miss.
+  visual (HTML string), options/left/right, answer, answerText }`. The unknown
+  value in `question` is the `BLANK` span (an underline), rendered via
+  `innerHTML`. `renderQuestion` honours `state.answerMode` (from settings):
+  `choice4` (default) / `choice2` (answer + one distractor) render option
+  buttons in `#answers`; `keypad` shows the `#keypadArea` number pad (type the
+  answer); `compare` questions always use the tappable `#compareArea`
+  regardless of mode. `handleAnswer` compares the chosen value (number or
+  `'left'|'right'|'equal'`) to `q.answer`, using `state.answerEls` to highlight
+  the correct choice on a miss.
 - **Visual renderers** return HTML strings: `field(classes)` (built on
   `rowsHTML`) renders the structured dot field as **10 circles per row with a
   Fünfer-gap after the 5th**, so a quantity ≤10 fills one row and 11–20 spills
@@ -94,7 +98,8 @@ Everything lives in one file. Layout:
 
 - **Persistence** (`localStorage`, key `matheheld_v1`): a single `store` object
   holds the global `muted` flag and per-profile stats (`totalStars`, `bestLevel`,
-  `bestStreak`, `games`, `bestAccuracy`, plus `lastRange`/`lastTypes`).
+  `bestStreak`, `games`, `bestAccuracy`, plus `lastRange`/`lastTypes` and the
+  per-profile `answerMode` set on the `#settingsScreen`).
   `commitProgress()` runs once per finished round (from `showSummary`) to
   accumulate totals and detect new records; `renderProfileStats()` shows each
   child's totals on the profile screen; `applySetup()` restores the last-used

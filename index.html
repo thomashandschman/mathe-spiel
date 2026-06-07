@@ -658,6 +658,53 @@
   .equal-btn.correct { background: rgba(44,182,125,.25); border-color: var(--green); }
   .equal-btn.wrong { background: rgba(229,49,112,.2); border-color: var(--accent2); }
 
+  /* ── Blank for the unknown value (replaces "?") ── */
+  .blank {
+    display: inline-block;
+    min-width: 1em;
+    border-bottom: 0.16em solid var(--accent);
+    margin: 0 0.06em;
+  }
+
+  /* ══════════ NUMBER PAD (Ziffernblock) ══════════ */
+  .keypad { display: none; flex-direction: column; align-items: center; gap: clamp(8px, 1.6dvh, 14px); }
+  .keypad.active { display: flex; }
+  .keypad-display {
+    min-width: 2.4em;
+    min-height: 1.4em;
+    padding: 2px 14px;
+    font-size: clamp(1.8rem, 8vw, 2.6rem);
+    font-weight: 900;
+    letter-spacing: 3px;
+    border-bottom: 3px solid var(--muted);
+    color: var(--text);
+  }
+  .keypad-display.correct { color: var(--green); border-color: var(--green); animation: pop .4s; }
+  .keypad-display.wrong { color: var(--accent2); border-color: var(--accent2); animation: shake .4s; }
+  .keypad-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(6px, 1.8vw, 10px); width: 100%; max-width: 300px; }
+  .key {
+    padding: clamp(8px, 1.6dvh, 14px);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: rgba(255,255,255,.06);
+    color: var(--text);
+    font-family: inherit;
+    font-size: clamp(1.2rem, 5vw, 1.6rem);
+    font-weight: 700;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-appearance: none;
+    min-height: clamp(42px, 6.5dvh, 56px);
+  }
+  .key:active { transform: scale(.96); }
+  @media (hover: hover) { .key:hover { background: rgba(255,255,255,.12); } }
+  .key-ok { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .key-fn { background: rgba(255,255,255,.03); color: var(--muted); }
+
+  /* ── Settings page ── */
+  .settings-group { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 6px; }
+  .settings-name { font-weight: 900; font-size: clamp(1rem, 4vw, 1.2rem); }
+
   /* ══ iPhone-specific: taller screens get more breathing room ══ */
   /* iPhone 17 Pro Max: 440x956 logical, iPhone 17: 393x852 logical */
   @media (max-width: 430px) and (min-height: 800px) {
@@ -719,6 +766,30 @@
         <span class="pf-best" id="bestTheo"></span>
       </button>
     </div>
+    <button class="btn btn-secondary" id="openSettings">⚙️ Einstellungen</button>
+  </div>
+
+  <!-- ═══ SETTINGS ═══ -->
+  <div id="settingsScreen" class="screen">
+    <div class="title setup-title">Einstellungen</div>
+    <div class="range-label">Wie wird geantwortet?</div>
+    <div class="settings-group">
+      <div class="settings-name">🦸‍♂️ Theo</div>
+      <div class="range-options" data-mode-for="theo">
+        <button class="range-btn" data-mode="choice4">4 Auswahl</button>
+        <button class="range-btn" data-mode="choice2">2 Auswahl</button>
+        <button class="range-btn" data-mode="keypad">Eintippen</button>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-name">🌈 Lara</div>
+      <div class="range-options" data-mode-for="lara">
+        <button class="range-btn" data-mode="choice4">4 Auswahl</button>
+        <button class="range-btn" data-mode="choice2">2 Auswahl</button>
+        <button class="range-btn" data-mode="keypad">Eintippen</button>
+      </div>
+    </div>
+    <button class="btn btn-primary" id="settingsBack">Fertig</button>
   </div>
 
   <!-- ═══ THEO SETUP ═══ -->
@@ -778,6 +849,23 @@
       <div class="visual" id="visual"></div>
       <div class="answers" id="answers"></div>
       <div class="compare-wrap" id="compareArea"></div>
+      <div class="keypad" id="keypadArea">
+        <div class="keypad-display" id="keypadDisplay"></div>
+        <div class="keypad-keys">
+          <button class="key" data-k="1">1</button>
+          <button class="key" data-k="2">2</button>
+          <button class="key" data-k="3">3</button>
+          <button class="key" data-k="4">4</button>
+          <button class="key" data-k="5">5</button>
+          <button class="key" data-k="6">6</button>
+          <button class="key" data-k="7">7</button>
+          <button class="key" data-k="8">8</button>
+          <button class="key" data-k="9">9</button>
+          <button class="key key-fn" data-k="del">⌫</button>
+          <button class="key" data-k="0">0</button>
+          <button class="key key-ok" data-k="ok">OK</button>
+        </div>
+      </div>
       <div class="feedback" id="feedback"></div>
       <div class="streak-bar" id="streakBar"></div>
     </div>
@@ -839,6 +927,8 @@ const state = {
   profile: null,        // 'lara' | 'theo'
   range: 10,            // Theo: 10/20 · Lara: 5/10
   types: [],            // enabled task-type ids for the chosen profile
+  answerMode: 'choice4',// 'choice4' | 'choice2' | 'keypad' (per profile, from settings)
+  entry: '',            // current number-pad entry
   level: 1,
   stars: 0,
   xp: 0,
@@ -873,11 +963,14 @@ const LEVEL_MSGS = [
   'Nichts kann dich aufhalten!',
 ];
 const OBJECTS = ['🍎','⭐','🐟','🌸','🐝','🚗','🎈','🍓','🐢','🦋'];
+// the unknown value in a question (shown as an underline blank instead of "?")
+const BLANK = '<span class="blank">&nbsp;</span>';
 
 // ═══════════ DOM REFS ═══════════
 const $ = id => document.getElementById(id);
 const screens = {
   profile: $('profileScreen'),
+  settings: $('settingsScreen'),
   theo: $('theoScreen'),
   lara: $('laraScreen'),
   game: $('gameScreen'),
@@ -906,6 +999,7 @@ state.muted = !!store.muted;
 
 function profileStats(p) {
   if (!store[p]) store[p] = { totalStars: 0, bestLevel: 1, bestStreak: 0, games: 0, bestAccuracy: 0 };
+  if (!store[p].answerMode) store[p].answerMode = 'choice4';
   return store[p];
 }
 
@@ -1156,6 +1250,47 @@ $('reviewBtn').addEventListener('click', () => {
   nextQuestion();
 });
 
+// ═══════════ SETTINGS ═══════════
+// per-profile answer mode selector
+document.querySelectorAll('[data-mode-for]').forEach(group => {
+  const profile = group.dataset.modeFor;
+  group.querySelectorAll('.range-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.range-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      profileStats(profile).answerMode = btn.dataset.mode;
+      saveStore();
+    });
+  });
+});
+function renderSettings() {
+  document.querySelectorAll('[data-mode-for]').forEach(group => {
+    const mode = profileStats(group.dataset.modeFor).answerMode;
+    group.querySelectorAll('.range-btn').forEach(b =>
+      b.classList.toggle('selected', b.dataset.mode === mode));
+  });
+}
+$('openSettings').addEventListener('click', () => { renderSettings(); showScreen('settings'); });
+$('settingsBack').addEventListener('click', () => showScreen('profile'));
+
+// ═══════════ NUMBER PAD ═══════════
+document.querySelectorAll('#keypadArea .key').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (state.answered) return;
+    const k = btn.dataset.k;
+    if (k === 'ok') {
+      if (state.entry === '') return;
+      sfxTap();
+      handleAnswer($('keypadDisplay'), parseInt(state.entry, 10));
+      return;
+    }
+    if (k === 'del') state.entry = state.entry.slice(0, -1);
+    else if (state.entry.length < 2) state.entry += k;
+    sfxTap();
+    $('keypadDisplay').textContent = state.entry;
+  });
+});
+
 // ═══════════ GAME LIFECYCLE ═══════════
 function resetState() {
   state.level = 1;
@@ -1176,6 +1311,7 @@ function resetState() {
 
 function startGame() {
   resetState();
+  state.answerMode = profileStats(state.profile).answerMode || 'choice4';
   state.questionsPerRound = state.profile === 'lara' ? 10 : 12;
   showScreen('game');
   updateHUD();
@@ -1224,7 +1360,7 @@ function buildPlusMinus(forceCross) {
   const op = isAdd ? '+' : '−';
   return {
     kind: 'choice',
-    question: `${a} ${op} ${b} = ?`,
+    question: `${a} ${op} ${b} = ${BLANK}`,
     sub: '',
     visual: field(classes),
     options: makeOptions(answer, 0, range),
@@ -1242,7 +1378,7 @@ function buildZehner() {
   const classes = fillClasses(20, [{ count: a, cls: 'on-a' }, { count: b, cls: 'on-b' }]);
   return {
     kind: 'choice',
-    question: `${a} + ${b} = ?`,
+    question: `${a} + ${b} = ${BLANK}`,
     sub: 'Denk an die 10 als Rastplatz!',
     visual: field(classes),
     options: makeOptions(answer, 0, 20),
@@ -1260,7 +1396,7 @@ function buildZerlegung() {
     const classes = fillClasses(10, [{ count: a, cls: 'on-a' }, { count: 10 - a, cls: 'want' }]);
     return {
       kind: 'choice',
-      question: `${a} + ? = 10`,
+      question: `${a} + ${BLANK} = 10`,
       sub: 'Wie viele fehlen bis 10?',
       visual: field(classes),
       options: makeOptions(answer, 0, 10),
@@ -1278,7 +1414,7 @@ function buildZerlegung() {
   const classes = fillClasses(10, [{ count: part, cls: 'on-a' }, { count: answer, cls: 'want' }]);
   return {
     kind: 'choice',
-    question: `${n} = ${part} + ?`,
+    question: `${n} = ${part} + ${BLANK}`,
     sub: 'Zerlege die Zahl!',
     visual: field(classes),
     options: makeOptions(answer, 0, 10),
@@ -1297,7 +1433,7 @@ function buildDoppeln(cap) {
     const classes = fillClasses(capFor(answer), [{ count: n, cls: 'on-a' }, { count: n, cls: 'on-b' }]);
     return {
       kind: 'choice',
-      question: `${n} + ${n} = ?`,
+      question: `${n} + ${n} = ${BLANK}`,
       sub: 'Das Doppelte!',
       visual: field(classes),
       options: makeOptions(answer, 0, cap),
@@ -1311,7 +1447,7 @@ function buildDoppeln(cap) {
   const classes = fillClasses(capFor(m), [{ count: answer, cls: 'on-a' }, { count: answer, cls: 'on-b' }]);
   return {
     kind: 'choice',
-    question: `Die Hälfte von ${m} = ?`,
+    question: `Die Hälfte von ${m} = ${BLANK}`,
     sub: 'In zwei gleiche Teile!',
     visual: field(classes),
     options: makeOptions(answer, 0, cap),
@@ -1426,7 +1562,7 @@ function nextQuestion() {
 
 function renderQuestion(q, label) {
   $('taskLabel').textContent = label;
-  $('taskQuestion').textContent = q.question || '';
+  $('taskQuestion').innerHTML = q.question || '';   // may contain the blank span
   $('taskSub').textContent = q.sub || '';
   $('visual').classList.remove('cheer');
   $('visual').innerHTML = q.visual || '';
@@ -1435,12 +1571,15 @@ function renderQuestion(q, label) {
 
   const answersEl = $('answers');
   const compareEl = $('compareArea');
+  const keypadEl = $('keypadArea');
   answersEl.innerHTML = '';
   compareEl.innerHTML = '';
   compareEl.classList.remove('active');
+  keypadEl.classList.remove('active');
   answersEl.style.display = 'grid';
 
   if (q.kind === 'compare') {
+    // comparison always uses the tappable cards, regardless of answer mode
     answersEl.style.display = 'none';
     compareEl.classList.add('active');
 
@@ -1467,8 +1606,22 @@ function renderQuestion(q, label) {
       { el: eqBtn, value: 'equal' },
       { el: rightCard, value: 'right' },
     ];
+  } else if (state.answerMode === 'keypad') {
+    // type the answer on the number pad
+    answersEl.style.display = 'none';
+    state.entry = '';
+    $('keypadDisplay').textContent = '';
+    $('keypadDisplay').className = 'keypad-display';
+    keypadEl.classList.add('active');
   } else {
-    q.options.forEach(opt => {
+    // multiple choice: 4 options, or 2 (answer + one distractor)
+    let opts = q.options;
+    if (state.answerMode === 'choice2') {
+      const correct = opts.find(o => o.value === q.answer);
+      const others = opts.filter(o => o.value !== q.answer);
+      opts = shuffle([correct, pick(others)]);
+    }
+    opts.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'answer-btn';
       if (opt.html) btn.innerHTML = opt.html; else btn.textContent = opt.label;
