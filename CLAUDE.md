@@ -57,7 +57,12 @@ Everything lives in one file. Layout:
   router — this class swap *is* the navigation.
 - **Game loop**: `startGame()` → `nextQuestion()` → `handleAnswer()` →
   (after a ~1700ms delay) back to `nextQuestion()`, until `questionsPerRound`
-  is reached, then `showSummary()`.
+  is reached. Wrongly-answered questions are collected in `state.wrongQ`; if
+  any exist at round end, `startReview()` replays them (`state.reviewMode`,
+  via the `#reviewOverlay` intro) before `showSummary()`. Review answers are
+  practice only — `handleAnswer` skips all scoring/XP/stats when
+  `state.reviewMode` is set. `renderQuestion(q, label)` does the DOM rendering
+  for both phases.
 - **Question generation**: `generateQuestion()` picks a random enabled type
   for the active profile and dispatches to a per-type `build*()` function
   (`buildPlusMinus`, `buildZehner`, `buildZerlegung`, `buildDoppeln`,
