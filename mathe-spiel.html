@@ -139,7 +139,9 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    padding: clamp(6px, 1dvh, 12px) 0;
+    gap: clamp(4px, 2vw, 10px);
+    /* leave room on the right for the fixed mute button so nothing overlaps */
+    padding: clamp(6px, 1dvh, 12px) clamp(42px, 12vw, 50px) clamp(6px, 1dvh, 12px) 0;
   }
   .hud-item {
     display: flex;
@@ -148,7 +150,26 @@
     font-weight: 700;
     font-size: clamp(0.85rem, 3.5vw, 1.05rem);
   }
-  .hud-icon { font-size: clamp(1rem, 4vw, 1.3rem); }
+  .hud-icon { display: inline-flex; align-items: center; color: var(--muted); }
+  .hud-icon svg { width: clamp(1rem, 4.2vw, 1.3rem); height: clamp(1rem, 4.2vw, 1.3rem); }
+  .hud-icon.hud-star { color: var(--star); }
+  /* flat icon buttons (header back, etc.) */
+  .icon-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 4px;
+    margin: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-appearance: none;
+    touch-action: manipulation;
+    flex: 0 0 auto;
+  }
+  .icon-btn:active { transform: scale(.9); }
+  .icon-btn svg { width: clamp(22px, 6.5vw, 28px); height: clamp(22px, 6.5vw, 28px); }
   /* ── XP Bar ── */
   .xp-bar-wrap {
     width: 100%;
@@ -441,46 +462,23 @@
     height: clamp(38px, 10vw, 46px);
     border-radius: 50%;
     border: none;
-    background: rgba(26,25,50,.85);
-    color: var(--text);
-    font-size: clamp(1.05rem, 4.5vw, 1.35rem);
+    background: rgba(26,25,50,.6);
+    color: var(--muted);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,.35);
     touch-action: manipulation;
     -webkit-appearance: none;
   }
   #muteBtn:active { transform: scale(.92); }
-
-  /* ── Back button (mirror of mute, top-left; only during the game) ── */
-  #backBtn {
-    position: fixed;
-    top: calc(8px + var(--sat));
-    left: calc(10px + var(--sal));
-    z-index: 90;
-    width: clamp(38px, 10vw, 46px);
-    height: clamp(38px, 10vw, 46px);
-    border-radius: 50%;
-    border: none;
-    background: rgba(26,25,50,.85);
-    color: var(--text);
-    font-size: clamp(1.2rem, 5vw, 1.5rem);
-    font-weight: 900;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 14px rgba(0,0,0,.35);
-    touch-action: manipulation;
-    -webkit-appearance: none;
-  }
-  #backBtn.show { display: flex; }
-  #backBtn:active { transform: scale(.92); }
+  #muteBtn svg { width: 56%; height: 56%; }
 
   #sumExtra { color: var(--muted); font-size: clamp(0.85rem, 3.4vw, 1rem); font-weight: 700; text-align: center; }
   #sumExtra .rec { color: var(--star); }
+
+  .key svg { width: 1.4em; height: 1.4em; vertical-align: middle; }
+  .btn svg { width: 1.05em; height: 1.05em; vertical-align: -0.16em; margin-right: .4em; }
 
   /* ══════════ TYPE CHIPS (multi-select) ══════════ */
   .type-options {
@@ -742,8 +740,7 @@
 </head>
 <body>
 
-<button id="backBtn" aria-label="Zurück">←</button>
-<button id="muteBtn" aria-label="Ton an/aus">🔊</button>
+<button id="muteBtn" aria-label="Ton an/aus"></button>
 
 <div class="game-container">
 
@@ -766,7 +763,7 @@
         <span class="pf-best" id="bestTheo"></span>
       </button>
     </div>
-    <button class="btn btn-secondary" id="openSettings">⚙️ Einstellungen</button>
+    <button class="btn btn-secondary" id="openSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 13.5a1.6 1.6 0 0 0 .32 1.77l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.6 1.6 0 0 0-2.72 1.13V21a2 2 0 0 1-4 0v-.1A1.6 1.6 0 0 0 7 19.3l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.6 1.6 0 0 0 4.7 13H4a2 2 0 0 1 0-4h.1A1.6 1.6 0 0 0 5.7 7l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.6 1.6 0 0 0 11 4.7V4a2 2 0 0 1 4 0v.1A1.6 1.6 0 0 0 17 5.7l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.6 1.6 0 0 0 19.3 11H20a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.5.5z"/></svg>Einstellungen</button>
   </div>
 
   <!-- ═══ SETTINGS ═══ -->
@@ -834,9 +831,12 @@
   <!-- ═══ GAME SCREEN ═══ -->
   <div id="gameScreen" class="screen">
     <div class="hud">
-      <div class="hud-item"><span class="hud-icon">⭐</span><span id="hudStars">0</span></div>
-      <div class="hud-item"><span class="hud-icon">🏅</span> Level <span id="hudLevel">1</span></div>
-      <div class="hud-item"><span class="hud-icon">🎯</span><span id="hudCorrect">0</span>/<span id="hudTotal">0</span></div>
+      <button class="icon-btn" id="backBtn" aria-label="Zurück">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="hud-item"><span class="hud-icon hud-star"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l2.9 5.9 6.5.95-4.7 4.58 1.1 6.47L12 17.9l-5.8 3.05 1.1-6.47L2.6 9.9l6.5-.95L12 2.5z"/></svg></span><span id="hudStars">0</span></div>
+      <div class="hud-item"><span class="hud-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5.5"/><path d="M8.5 13.5L7 22l5-2.8L17 22l-1.5-8.5"/></svg></span> Level <span id="hudLevel">1</span></div>
+      <div class="hud-item"><span class="hud-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg></span><span id="hudCorrect">0</span>/<span id="hudTotal">0</span></div>
     </div>
 
     <div class="xp-bar-wrap"><div class="xp-bar" id="xpBar" style="width:0%"></div></div>
@@ -861,7 +861,7 @@
           <button class="key" data-k="7">7</button>
           <button class="key" data-k="8">8</button>
           <button class="key" data-k="9">9</button>
-          <button class="key key-fn" data-k="del">⌫</button>
+          <button class="key key-fn" data-k="del" aria-label="Löschen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 5H8.5L2.5 12l6 7H21a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="M16 9.5l-5 5M11 9.5l5 5"/></svg></button>
           <button class="key" data-k="0">0</button>
           <button class="key key-ok" data-k="ok">OK</button>
         </div>
@@ -981,8 +981,6 @@ function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
   screens[name].classList.add('active');
   if (name === 'profile') renderProfileStats();
-  // back button only makes sense while playing
-  $('backBtn').classList.toggle('show', name === 'game');
 }
 
 // ═══════════ PERSISTENCE (Fortschrittsspeicher) ═══════════
@@ -1072,7 +1070,9 @@ function sfxWrong()   { if (!ensureAudio()) return; tone(196, 0, 0.20, 'sine', 0
 function sfxLevelUp() { if (!ensureAudio()) return; [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.11, 0.22, 'triangle', 0.22)); }
 function sfxTap()     { if (!ensureAudio()) return; tone(880, 0, 0.06, 'sine', 0.08); }
 
-function updateMuteIcon() { $('muteBtn').textContent = state.muted ? '🔇' : '🔊'; }
+const ICON_SOUND_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+const ICON_SOUND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M22 9l-5 5M17 9l5 5"/></svg>';
+function updateMuteIcon() { $('muteBtn').innerHTML = state.muted ? ICON_SOUND_OFF : ICON_SOUND_ON; }
 $('muteBtn').addEventListener('click', () => {
   state.muted = !state.muted;
   store.muted = state.muted;
