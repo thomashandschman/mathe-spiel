@@ -734,7 +734,8 @@
       <button class="type-chip selected" data-type="plusminus">➕➖ Plus &amp; Minus<span class="chk">✓</span></button>
       <button class="type-chip selected" data-type="zehner">🌉 Zehnerübergang<span class="chk">✓</span></button>
       <button class="type-chip selected" data-type="zerlegung">🧩 Zerlegen &amp; Partner zu 10<span class="chk">✓</span></button>
-      <button class="type-chip selected" data-type="doppeln">✨ Verdoppeln &amp; Halbieren<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="doppeln10">✨ Verdoppeln &amp; Halbieren · bis 10<span class="chk">✓</span></button>
+      <button class="type-chip" data-type="doppeln20">✨ Verdoppeln &amp; Halbieren · bis 20<span class="chk">✓</span></button>
     </div>
     <button class="btn btn-primary" id="theoStart">Los geht's!</button>
     <button class="btn btn-secondary" id="theoBack">Zurück</button>
@@ -1197,7 +1198,8 @@ function generateQuestion() {
   if (type === 'plusminus') return buildPlusMinus(false);
   if (type === 'zehner')    return buildZehner();
   if (type === 'zerlegung') return buildZerlegung();
-  return buildDoppeln();
+  if (type === 'doppeln20') return buildDoppeln(20);
+  return buildDoppeln(10);   // 'doppeln10' — stay within the ten
 }
 
 // ── Theo: Plus & Minus with Zehner-/Zwanzigerfeld support ──
@@ -1286,9 +1288,8 @@ function buildZerlegung() {
   };
 }
 
-// ── Theo: Verdoppeln & Halbieren ──
-function buildDoppeln() {
-  const cap = state.range;
+// ── Theo: Verdoppeln & Halbieren (own number range, independent of the global one) ──
+function buildDoppeln(cap) {
   if (Math.random() < 0.5) {
     // Verdoppeln: n + n
     const n = randInt(1, Math.floor(cap / 2));
