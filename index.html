@@ -734,7 +734,8 @@
       <button class="type-chip selected" data-type="plusminus">➕➖ Plus &amp; Minus<span class="chk">✓</span></button>
       <button class="type-chip selected" data-type="zehner">🌉 Zehnerübergang<span class="chk">✓</span></button>
       <button class="type-chip selected" data-type="zerlegung">🧩 Zerlegen &amp; Partner zu 10<span class="chk">✓</span></button>
-      <button class="type-chip selected" data-type="doppeln">✨ Verdoppeln &amp; Halbieren<span class="chk">✓</span></button>
+      <button class="type-chip selected" data-type="doppeln10">✨ Verdoppeln &amp; Halbieren · bis 10<span class="chk">✓</span></button>
+      <button class="type-chip" data-type="doppeln20">✨ Verdoppeln &amp; Halbieren · bis 20<span class="chk">✓</span></button>
     </div>
     <button class="btn btn-primary" id="theoStart">Los geht's!</button>
     <button class="btn btn-secondary" id="theoBack">Zurück</button>
@@ -820,6 +821,14 @@
   <button class="btn btn-primary" id="lvlUpBtn">Weiter!</button>
 </div>
 
+<!-- ═══ REVIEW INTRO OVERLAY ═══ -->
+<div id="reviewOverlay" class="overlay">
+  <div class="big-emoji">🔁</div>
+  <div class="level-text">Nochmal üben!</div>
+  <div class="level-sub">Diese Aufgaben schauen wir uns gemeinsam noch einmal an.</div>
+  <button class="btn btn-primary" id="reviewBtn">Los!</button>
+</div>
+
 <script>
 // ═══════════ PREVENT iOS BOUNCE / PULL-TO-REFRESH ═══════════
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
@@ -843,6 +852,10 @@ const state = {
   answered: false,
   current: null,        // current question object
   answerEls: [],        // [{ el, value }] for highlighting the correct choice
+  wrongQ: [],           // questions answered wrong this round
+  reviewMode: false,    // replaying the wrong questions at the end?
+  reviewQueue: [],
+  reviewIndex: 0,
 };
 
 const PRAISE = [
@@ -1137,6 +1150,12 @@ $('backBtn').addEventListener('click', () => {
   showScreen(state.profile === 'lara' ? 'lara' : 'theo');
 });
 
+// "Nochmal üben" intro → start replaying the wrong questions
+$('reviewBtn').addEventListener('click', () => {
+  $('reviewOverlay').classList.remove('active');
+  nextQuestion();
+});
+
 // ═══════════ GAME LIFECYCLE ═══════════
 function resetState() {
   state.level = 1;
@@ -1149,6 +1168,10 @@ function resetState() {
   state.bestStreak = 0;
   state.questionNum = 0;
   state.answered = false;
+  state.wrongQ = [];
+  state.reviewMode = false;
+  state.reviewQueue = [];
+  state.reviewIndex = 0;
 }
 
 function startGame() {
@@ -1175,7 +1198,8 @@ function generateQuestion() {
   if (type === 'plusminus') return buildPlusMinus(false);
   if (type === 'zehner')    return buildZehner();
   if (type === 'zerlegung') return buildZerlegung();
-  return buildDoppeln();
+  if (type === 'doppeln20') return buildDoppeln(20);
+  return buildDoppeln(10);   // 'doppeln10' — stay within the ten
 }
 
 // ── Theo: Plus & Minus with Zehner-/Zwanzigerfeld support ──
@@ -1264,9 +1288,8 @@ function buildZerlegung() {
   };
 }
 
-// ── Theo: Verdoppeln & Halbieren ──
-function buildDoppeln() {
-  const cap = state.range;
+// ── Theo: Verdoppeln & Halbieren (own number range, independent of the global one) ──
+function buildDoppeln(cap) {
   if (Math.random() < 0.5) {
     // Verdoppeln: n + n
     const n = randInt(1, Math.floor(cap / 2));
@@ -1376,15 +1399,33 @@ function buildZuordnen() {
 
 // ═══════════ RENDER QUESTION ═══════════
 function nextQuestion() {
-  if (state.questionNum >= state.questionsPerRound) { showSummary(); return; }
+  // Review phase: replay the questions answered wrong this round
+  if (state.reviewMode) {
+    if (state.reviewIndex >= state.reviewQueue.length) { showSummary(); return; }
+    const q = state.reviewQueue[state.reviewIndex++];
+    state.answered = false;
+    state.current = q;
+    state.answerEls = [];
+    renderQuestion(q, `🔁 Nochmal üben · ${state.reviewIndex} von ${state.reviewQueue.length}`);
+    return;
+  }
+
+  if (state.questionNum >= state.questionsPerRound) {
+    if (state.wrongQ.length > 0) { startReview(); return; }
+    showSummary();
+    return;
+  }
 
   state.questionNum++;
   state.answered = false;
   const q = generateQuestion();
   state.current = q;
   state.answerEls = [];
+  renderQuestion(q, `Aufgabe ${state.questionNum} von ${state.questionsPerRound}`);
+}
 
-  $('taskLabel').textContent = `Aufgabe ${state.questionNum} von ${state.questionsPerRound}`;
+function renderQuestion(q, label) {
+  $('taskLabel').textContent = label;
   $('taskQuestion').textContent = q.question || '';
   $('taskSub').textContent = q.sub || '';
   $('visual').classList.remove('cheer');
@@ -1440,58 +1481,75 @@ function nextQuestion() {
   renderStreakBar();
 }
 
+// Start the "Nochmal üben" round with the questions answered wrong this round.
+function startReview() {
+  state.reviewMode = true;
+  state.reviewQueue = state.wrongQ.slice();
+  state.reviewIndex = 0;
+  $('reviewOverlay').classList.add('active');
+}
+
+// Cheer the visual and reveal the concept on a correct answer.
+function revealConcept(q) {
+  $('visual').classList.add('cheer');
+  if (q.revealType) setTimeout(() => {
+    if (q.revealType === 'want') revealWant();
+    else if (q.revealType === 'gone') revealGone();
+  }, 350);
+}
+
 // ═══════════ HANDLE ANSWER ═══════════
 function handleAnswer(el, chosen) {
   if (state.answered) return;
   state.answered = true;
-  state.total++;
 
   const q = state.current;
   const isCorrect = chosen === q.answer;
+  if (!state.reviewMode) state.total++;   // count every answered question this round
 
   if (isCorrect) {
     el.classList.add('correct');
-    state.correct++;
-    state.streak++;
-    if (state.streak > state.bestStreak) state.bestStreak = state.streak;
-
-    let earned = 1;
-    if (state.streak > 0 && state.streak % 3 === 0) earned += 2;
-    state.stars += earned;
-    state.xp += 1;
-
-    $('feedback').textContent = pick(PRAISE) + (earned > 1 ? ` +${earned} ⭐` : ' +1 ⭐');
-    $('feedback').className = 'feedback good';
-
     sfxCorrect();
     spawnStarFloat(el);
+    revealConcept(q);
+    $('feedback').className = 'feedback good';
 
-    // reinforce the concept on the visual: a little cheer + a reveal
-    $('visual').classList.add('cheer');
-    if (q.revealType) setTimeout(() => {
-      if (q.revealType === 'want') revealWant();
-      else if (q.revealType === 'gone') revealGone();
-    }, 350);
+    if (state.reviewMode) {
+      $('feedback').textContent = pick(PRAISE) + ' 🎉';
+    } else {
+      state.correct++;
+      state.streak++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
 
-    if (state.xp >= state.xpNeeded) {
-      state.level++;
-      state.xp = 0;
-      state.xpNeeded = Math.min(state.xpNeeded + 2, 15);
-      setTimeout(showLevelUp, 500);
+      let earned = 1;
+      if (state.streak > 0 && state.streak % 3 === 0) earned += 2;
+      state.stars += earned;
+      state.xp += 1;
+
+      $('feedback').textContent = pick(PRAISE) + (earned > 1 ? ` +${earned} ⭐` : ' +1 ⭐');
+
+      if (state.xp >= state.xpNeeded) {
+        state.level++;
+        state.xp = 0;
+        state.xpNeeded = Math.min(state.xpNeeded + 2, 15);
+        setTimeout(showLevelUp, 500);
+      }
     }
   } else {
     el.classList.add('wrong');
-    state.streak = 0;
-    // highlight the correct choice
     const right = state.answerEls.find(a => a.value === q.answer);
     if (right) right.el.classList.add('correct');
+    sfxWrong();
     $('feedback').textContent = pick(ENCOURAGE) + ` Richtig ist: ${q.answerText}`;
     $('feedback').className = 'feedback bad';
-    sfxWrong();
+
+    if (!state.reviewMode) {
+      state.streak = 0;
+      state.wrongQ.push(q);   // collect for the end-of-round review
+    }
   }
 
-  renderStreakBar();
-  updateHUD();
+  if (!state.reviewMode) { renderStreakBar(); updateHUD(); }
 
   state.answerEls.forEach(a => a.el.style.pointerEvents = 'none');
   setTimeout(nextQuestion, 1700);
