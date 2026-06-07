@@ -454,6 +454,31 @@
   }
   #muteBtn:active { transform: scale(.92); }
 
+  /* ── Back button (mirror of mute, top-left; only during the game) ── */
+  #backBtn {
+    position: fixed;
+    top: calc(8px + var(--sat));
+    left: calc(10px + var(--sal));
+    z-index: 90;
+    width: clamp(38px, 10vw, 46px);
+    height: clamp(38px, 10vw, 46px);
+    border-radius: 50%;
+    border: none;
+    background: rgba(26,25,50,.85);
+    color: var(--text);
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+    font-weight: 900;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.35);
+    touch-action: manipulation;
+    -webkit-appearance: none;
+  }
+  #backBtn.show { display: flex; }
+  #backBtn:active { transform: scale(.92); }
+
   #sumExtra { color: var(--muted); font-size: clamp(0.85rem, 3.4vw, 1rem); font-weight: 700; text-align: center; }
   #sumExtra .rec { color: var(--star); }
 
@@ -528,6 +553,30 @@
   .cell.gone { background: transparent; border-color: var(--accent2); opacity: .7; }
   .cell.want { border-style: dashed; border-color: var(--star); background: rgba(255,216,3,.14); }
   .cell.gap5 { margin-left: clamp(8px, 2.5vw, 14px); }
+
+  /* ══════════ LEARNING ANIMATIONS ══════════ */
+  /* dots build up one after another → makes "adding" visible */
+  @keyframes dotPop { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.18); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes objPop { 0% { transform: scale(0) translateY(-8px); opacity: 0; } 60% { transform: scale(1.18); } 100% { transform: scale(1); opacity: 1; } }
+  @keyframes pipPop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  /* the unknown part gently breathes to draw attention */
+  @keyframes wantPulse {
+    0%,100% { box-shadow: 0 0 0 rgba(255,216,3,0); }
+    50% { box-shadow: 0 0 10px rgba(255,216,3,.75); border-color: #fff3b0; }
+  }
+  @keyframes visualCheer { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
+
+  .cell.on-a, .cell.on-b, .cell.gone { animation: dotPop .35s ease both; }
+  .cell.want { animation: wantPulse 1.4s ease-in-out infinite; }
+  .cell.just-filled { animation: dotPop .4s ease both; }
+  .obj { animation: objPop .42s ease both; }
+  .pip { animation: pipPop .3s ease both; }
+  .pip.off { animation: none; }
+  .visual.cheer { animation: visualCheer .5s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cell, .obj, .pip, .visual, .hero-emoji, .star-float, .overlay .big-emoji { animation: none !important; }
+  }
 
   /* mini dot field inside option buttons */
   .mini .cell { width: clamp(11px, 3.4vw, 15px); height: clamp(11px, 3.4vw, 15px); border-width: 1.5px; }
@@ -645,6 +694,7 @@
 </head>
 <body>
 
+<button id="backBtn" aria-label="Zurück">←</button>
 <button id="muteBtn" aria-label="Ton an/aus">🔊</button>
 
 <div class="game-container">
@@ -824,6 +874,8 @@ function showScreen(name) {
   Object.values(screens).forEach(s => s.classList.remove('active'));
   screens[name].classList.add('active');
   if (name === 'profile') renderProfileStats();
+  // back button only makes sense while playing
+  $('backBtn').classList.toggle('show', name === 'game');
 }
 
 // ═══════════ PERSISTENCE (Fortschrittsspeicher) ═══════════
@@ -951,14 +1003,17 @@ function makeOptions(answer, lo, hi) {
 // ── Visual builders (return HTML strings) ──
 function rowsHTML(classes, perRow, gapAfter) {
   let html = '';
+  let seq = 0; // staggers the entrance of filled dots in fill order
   for (let r = 0; r < classes.length; r += perRow) {
     html += '<div class="frame-row">';
     for (let i = r; i < Math.min(r + perRow, classes.length); i++) {
       const idxInRow = i - r;
       const extra = (gapAfter && idxInRow === gapAfter) ? ' gap5' : '';
       const c = classes[i];
+      const animated = /on-a|on-b|gone/.test(c);
+      const style = animated ? ` style="animation-delay:${(seq++ * 0.045).toFixed(3)}s"` : '';
       const txt = c.indexOf('gone') !== -1 ? '✕' : '';
-      html += `<div class="cell ${c}${extra}">${txt}</div>`;
+      html += `<div class="cell ${c}${extra}"${style}>${txt}</div>`;
     }
     html += '</div>';
   }
@@ -975,8 +1030,12 @@ function fieldFor(capacity, classes) {
 function diceHTML(n, small) {
   const map = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
   const on = new Set(map[n] || []);
-  let pips = '';
-  for (let i = 0; i < 9; i++) pips += `<div class="pip${on.has(i) ? '' : ' off'}"></div>`;
+  let pips = '', k = 0;
+  for (let i = 0; i < 9; i++) {
+    const isOn = on.has(i);
+    const style = isOn ? ` style="animation-delay:${(k++ * 0.05).toFixed(3)}s"` : '';
+    pips += `<div class="pip${isOn ? '' : ' off'}"${style}></div>`;
+  }
   return `<div class="dice${small ? ' dice-sm' : ''}">${pips}</div>`;
 }
 // small picture of a quantity for option buttons
@@ -988,8 +1047,27 @@ function miniMenge(n) {
 }
 function objectsHTML(n, emoji) {
   let s = '<div class="objects">';
-  for (let i = 0; i < n; i++) s += `<span class="obj">${emoji}</span>`;
+  for (let i = 0; i < n; i++) s += `<span class="obj" style="animation-delay:${(i * 0.06).toFixed(3)}s">${emoji}</span>`;
   return s + '</div>';
+}
+
+// On a correct answer, complete the picture so the concept is visible:
+// fill the "missing" dots (Zerlegung / verliebte Zahlen) …
+function revealWant() {
+  document.querySelectorAll('#visual .cell.want').forEach((c, i) => {
+    c.classList.remove('want');
+    c.classList.add('on-b', 'just-filled');
+    c.style.animationDelay = (i * 0.06).toFixed(3) + 's';
+  });
+}
+// … or fade out the dots that were taken away (subtraction) so the rest = result.
+function revealGone() {
+  document.querySelectorAll('#visual .cell.gone').forEach(c => {
+    c.style.transition = 'opacity .4s ease, transform .4s ease';
+    c.textContent = '';
+    c.style.opacity = '0';
+    c.style.transform = 'scale(0)';
+  });
 }
 
 // ═══════════ PROFILE / SETUP WIRING ═══════════
@@ -1045,6 +1123,11 @@ $('laraBack').addEventListener('click', () => showScreen('profile'));
 
 $('playAgainBtn').addEventListener('click', startGame);
 $('backHomeBtn').addEventListener('click', () => showScreen('profile'));
+
+// in-game back button → return to the current child's task selection
+$('backBtn').addEventListener('click', () => {
+  showScreen(state.profile === 'lara' ? 'lara' : 'theo');
+});
 
 // ═══════════ GAME LIFECYCLE ═══════════
 function resetState() {
@@ -1116,6 +1199,7 @@ function buildPlusMinus(forceCross) {
     options: makeOptions(answer, 0, cap),
     answer,
     answerText: String(answer),
+    revealType: isAdd ? null : 'gone',   // fade the subtracted dots when solved
   };
 }
 
@@ -1153,6 +1237,7 @@ function buildZerlegung() {
       options: makeOptions(answer, 0, 10),
       answer,
       answerText: String(answer),
+      revealType: 'want',   // fill the missing dots up to 10 when solved
     };
   }
   // Zerlegung: n = part + ?
@@ -1170,6 +1255,7 @@ function buildZerlegung() {
     options: makeOptions(answer, 0, 10),
     answer,
     answerText: String(answer),
+    revealType: 'want',   // fill the missing part when solved
   };
 }
 
@@ -1298,6 +1384,7 @@ function nextQuestion() {
   $('taskLabel').textContent = `Aufgabe ${state.questionNum} von ${state.questionsPerRound}`;
   $('taskQuestion').textContent = q.question || '';
   $('taskSub').textContent = q.sub || '';
+  $('visual').classList.remove('cheer');
   $('visual').innerHTML = q.visual || '';
   $('feedback').textContent = '';
   $('feedback').className = 'feedback';
@@ -1375,6 +1462,13 @@ function handleAnswer(el, chosen) {
 
     sfxCorrect();
     spawnStarFloat(el);
+
+    // reinforce the concept on the visual: a little cheer + a reveal
+    $('visual').classList.add('cheer');
+    if (q.revealType) setTimeout(() => {
+      if (q.revealType === 'want') revealWant();
+      else if (q.revealType === 'gone') revealGone();
+    }, 350);
 
     if (state.xp >= state.xpNeeded) {
       state.level++;
