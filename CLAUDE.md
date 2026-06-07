@@ -92,9 +92,13 @@ Everything lives in one file. Layout:
   unknown. On a correct answer the visual cheers, and `q.revealType` drives a
   concept reveal — `'want'` fills the missing dots (`revealWant`, Zerlegung /
   verliebte Zahlen), `'gone'` fades the subtracted dots (`revealGone`).
-- **Navigation chrome**: two fixed corner buttons outside `.game-container` —
-  `#muteBtn` (always shown) and `#backBtn` (shown only on the game screen via
-  `showScreen`), which returns to the active child's setup screen.
+- **Navigation chrome**: `#muteBtn` is a fixed top-right button (all screens);
+  `#backBtn` lives inside the game `.hud` row (so it can't overlap the HUD) and
+  returns to the active child's setup screen. UI icons are flat inline SVGs
+  (`currentColor`, feather/lucide-style) — back, speaker on/off (`ICON_SOUND_ON`/
+  `ICON_SOUND_OFF`, swapped in `updateMuteIcon`), HUD star/medal/target, the
+  settings gear, and the keypad delete key. Celebratory/illustrative emoji
+  (🏆/🌟/🔁, profile heroes, dice, counting objects) are intentionally kept.
 
 - **Persistence** (`localStorage`, key `matheheld_v1`): a single `store` object
   holds the global `muted` flag and per-profile stats (`totalStars`, `bestLevel`,
