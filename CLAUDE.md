@@ -68,11 +68,15 @@ Everything lives in one file. Layout:
   the tappable `#compareArea` (left card / `=` / right card). `handleAnswer`
   compares the chosen value (number or `'left'|'right'|'equal'`) to `q.answer`,
   using `state.answerEls` to highlight the correct choice on a miss.
-- **Visual renderers** return HTML strings: `tenFrame`/`twentyFrame`/`dotRows`
-  (built on `rowsHTML`) render structured dot fields with cell classes
-  `on-a`/`on-b`/`empty`/`gone`/`want` and a `gap5` class for the Fünfer-gap;
-  `diceHTML` draws dice pips; `objectsHTML` lays out emoji to count;
-  `miniMenge` draws small quantity pictures for option buttons.
+- **Visual renderers** return HTML strings: `field(classes)` (built on
+  `rowsHTML`) renders the structured dot field as **10 circles per row with a
+  Fünfer-gap after the 5th**, so a quantity ≤10 fills one row and 11–20 spills
+  into a second. A quantity is always drawn in a *complete* ten/twenty:
+  `capFor(whole)` picks 10 or 20 and `fillClasses(cap, segments)` fills the
+  coloured cells (`on-a`/`on-b`/`gone`/`want`) then pads the rest with `empty`
+  outline circles (so e.g. 8 → 10 circles, 8 filled). `diceHTML` draws dice
+  pips; `objectsHTML` lays out emoji to count; `miniMenge` draws small
+  complete-ten pictures for option buttons.
 - **Learning animations** (CSS, with `prefers-reduced-motion` opt-out): filled
   dots/objects/pips animate in *staggered in fill order* (renderers emit inline
   `animation-delay`) so "adding" is visible; `want` cells pulse to mark the
